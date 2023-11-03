@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: GPL
+pragma solidity ^0.8.19;
 
 import {Borrow} from "src/Borrow.sol";
 import {Lending} from "src/Lending.sol";
 
-contract Master {
+contract Master is Borrow, Lending{
 
 
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity ^0.8.19;
 
 contract Borrow {
     uint256 public FAKERESERVE;
@@ -22,7 +22,7 @@ contract Borrow {
 
     mapping(uint256 => LoanParams) private loan;
 
-    mapping(address => uint256) public balanceOf;
+    mapping(address => uint256) public balanceOfB;
 
     uint256 public ONEYEAR = 3.154E7;
 
@@ -37,7 +37,7 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
-        balanceOf[msg.sender] += msg.value;
+        balanceOfB[msg.sender] += msg.value;
         FAKERESERVE -= _loanSize;
         nonce = _nonce;
     }
@@ -50,7 +50,7 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
-        balanceOf[msg.sender] -= _amountPayback;
+        balanceOfB[msg.sender] -= _amountPayback;
         FAKERESERVE += _amountPayback;
     }
 
