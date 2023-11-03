@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.18;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.18;
 
 contract Borrow {
     uint256 public FAKERESERVE;
@@ -77,8 +77,8 @@ contract Borrow {
         uint256 illiquidCount = 0;
         
         // First, count the number of illiquid positions
-        for (uint256 i = 0; i < amountOfLoans; i++) {
-            if (checkLTV(i) < 5000) {
+        for (uint256 i = 1; i <= amountOfLoans; i++) {
+            if (checkLTV(i) > 5000) {
                 illiquidCount++;
             }
         }
@@ -88,8 +88,8 @@ contract Borrow {
         
         // Populate the illiquid positions
         uint256 currentIndex = 0;
-        for (uint256 i = 0; i < amountOfLoans; i++) {
-            if (checkLTV(i) < 5000) {
+        for (uint256 i = 1; i <= amountOfLoans; i++) {
+            if (checkLTV(i) > 5000) {
                 _illiquidPositions[currentIndex] = i;
                 currentIndex++;
             }
