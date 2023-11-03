@@ -100,17 +100,19 @@ contract Borrow {
     /*
     Notes what we want to do in this function:
     1. set the loan is active to false
-    2. return core to treasury + swap it to usdt so that lender is made whole
+    2. return swap the core to usdt so that lender is made whole
     3. 1/2 of whats extra to project
     4. 1/2 of whats extra to the liquidator
     */
-    
+
     function liquidatePosition(uint256 _nonce) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         uint256[] memory illiquidPositions = monitorIlliquidPositions();
         require(isNumberInArray(illiquidPositions, _nonce), "No illiquid loan found");
-
-
+        LoanParams storage sessionLoan = loan[_nonce];
+        sessionLoan.payedBack = true;  // Maybe we should do a more nuanced system that shows that the loan actually was liquidated 
+        // HERE IT SHOULD BE SOME LOGIC THAT PERFORMS THE SWAP
+        // HERE IT SHOULD BE SOME LOGIC WITCH CALCULATES HOW MUCH CORE ABOVE THE LENDING VALUE THAT SHOULD BE DISTRIBUTED
     }
 
     function isNumberInArray(uint[] memory numberArray, uint numberToCheck) private pure returns (bool _isFound) {
