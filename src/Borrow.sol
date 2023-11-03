@@ -3,7 +3,10 @@ pragma solidity 0.8.18;
 
 contract Borrow {
     uint256 public FAKERESERVE;
-    uint256 nonce;
+    uint256 public nonce;
+
+    /// @dev denominator used for multiplier (10_000 = 1)
+    uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
     constructor() {
         FAKERESERVE = 10_000;
@@ -46,11 +49,25 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
+        balanceOf[msg.sender] -= _amountPayback;
+        FAKERESERVE += _amountPayback;
     }
 
-
-    function topUpCollateral() public{}
+    function topUpCollateral(uint256 _nonce) public payable{
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        require(loan[_nonce].borrower == msg.sender, "You're not authorized");
+        LoanParams storage sessionLoan = loan[_nonce];
+        sessionLoan.collateral += msg.value;
+    }
+    
     function activeBorrowPosition() public view returns(uint256 _borrowPosition){}
+    
+    function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        LoanParams storage sessionLoan = loan[_nonce];
+        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / sessionLoan.collateral);
+    }
+    
     function liquidatePosition() public {}
     function monitorIlliquidPositions() public view returns(uint256 _illiquidPositions) {}
 }
