@@ -2,7 +2,7 @@
 pragma solidity 0.8.18;
 
 contract Borrow {
-    uint256 FAKERESERVE;
+    uint256 public FAKERESERVE;
     uint256 nonce;
 
     constructor() {
@@ -27,7 +27,7 @@ contract Borrow {
         require(_nonce == (nonce + 1), "Invalid nonce");
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
-        LoanParams storage sessionLoan = loan[nonce];
+        LoanParams storage sessionLoan = loan[_nonce];
 
         sessionLoan.borrower = msg.sender;
         sessionLoan.loanSize = _loanSize;
@@ -35,11 +35,17 @@ contract Borrow {
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
         balanceOf[msg.sender] += msg.value;
+        FAKERESERVE -= msg.value;
     }
 
-    function repayBorrow(uint256 _nonce) public{
+    function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
-        //LoanParams storage sessionLoan = loan[nonce]
+        require(loan[_nonce].borrower == msg.sender, "You're not authorized");
+        require(loan[_nonce].loanSize == _amountPayback, "Not enough repayed");
+        LoanParams storage sessionLoan = loan[_nonce];
+        sessionLoan.payedBack = true;
+        _to.transfer(sessionLoan.collateral);
+        sessionLoan.collateral = 0;
     }
 
 
