@@ -96,8 +96,31 @@ contract Borrow {
         }
     }
 
+
+    /*
+    Notes what we want to do in this function:
+    1. set the loan is active to false
+    2. return core to treasury + swap it to usdt so that lender is made whole
+    3. 1/2 of whats extra to project
+    4. 1/2 of whats extra to the liquidator
+    */
     
-    function liquidatePosition() public {}
+    function liquidatePosition(uint256 _nonce) public {
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        uint256[] memory illiquidPositions = monitorIlliquidPositions();
+        require(isNumberInArray(illiquidPositions, _nonce), "No illiquid loan found");
+
+
+    }
+
+    function isNumberInArray(uint[] memory numberArray, uint numberToCheck) private pure returns (bool _isFound) {
+        for (uint i = 0; i < numberArray.length; i++) {
+            if (numberArray[i] == numberToCheck) {
+                _isFound = true; // Number is found in the array
+            }
+        }
+        _isFound = false; // Number is not in the array
+    }
 
     function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
