@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.18;
 
 contract Borrow {
     uint256 public FAKERESERVE;
@@ -39,6 +39,7 @@ contract Borrow {
         sessionLoan.payedBack = false;
         balanceOf[msg.sender] += msg.value;
         FAKERESERVE -= _loanSize;
+        nonce = _nonce;
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
@@ -70,7 +71,37 @@ contract Borrow {
         LoanParams storage sessionLoan = loan[_nonce];
         _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / sessionLoan.collateral);
     }
+
+    function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
+        uint256 amountOfLoans = nonce;
+        uint256 illiquidCount = 0;
+        
+        // First, count the number of illiquid positions
+        for (uint256 i = 0; i < amountOfLoans; i++) {
+            if (checkLTV(i) < 5000) {
+                illiquidCount++;
+            }
+        }
+
+        // Initialize the dynamic array with the correct size
+        _illiquidPositions = new uint256[](illiquidCount);
+        
+        // Populate the illiquid positions
+        uint256 currentIndex = 0;
+        for (uint256 i = 0; i < amountOfLoans; i++) {
+            if (checkLTV(i) < 5000) {
+                _illiquidPositions[currentIndex] = i;
+                currentIndex++;
+            }
+        }
+    }
+
     
     function liquidatePosition() public {}
-    function monitorIlliquidPositions() public view returns(uint256 _illiquidPositions) {}
+
+    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        LoanParams storage sessionLoan = loan[_nonce];
+        sessionLoan.collateral = _newCollateral;
+    }
 }
