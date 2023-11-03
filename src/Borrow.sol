@@ -20,7 +20,7 @@ contract Borrow {
         bool payedBack;
     }
 
-    mapping(uint256 => LoanParams) public loan;
+    mapping(uint256 => LoanParams) private loan;
 
     mapping(address => uint256) public balanceOf;
 
@@ -38,7 +38,7 @@ contract Borrow {
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
         balanceOf[msg.sender] += msg.value;
-        FAKERESERVE -= msg.value;
+        FAKERESERVE -= _loanSize;
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
@@ -60,7 +60,10 @@ contract Borrow {
         sessionLoan.collateral += msg.value;
     }
     
-    function activeBorrowPosition() public view returns(uint256 _borrowPosition){}
+    function activeBorrowPosition(uint256 _nonce) public view returns(LoanParams memory _loanParams){
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        _loanParams = loan[_nonce];
+    }
     
     function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
