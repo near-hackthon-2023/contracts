@@ -8,10 +8,10 @@ import {Lending} from "src/Lending.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
-/// @title Master
+/// @title CoreFiCash
 /// @author CoreFi-Cash Technical Team
-/// @notice Master contract
-contract Master is Borrow, Lending {
+/// @notice CoreFiCash main contract
+contract CoreFiCash is Borrow, Lending {
     /// @dev USDC contract interface
     IERC20 private immutable USDT;
 
