@@ -12,6 +12,8 @@ contract Borrow {
 
     uint256 public nonceBorrow;
 
+    uint256 private interestRate = 0.05 * 10**18;
+
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
@@ -24,11 +26,14 @@ contract Borrow {
         address borrower;
         uint256 loanSize;
         uint256 collateral;
+        uint256 borrowedDate;
         uint256 dueDate;
         bool payedBack;
     }
 
     mapping(uint256 => LoanParams) private loan;
+
+    mapping (address => uint256) private interestSubtracted;
 
     uint256 ONEYEAR = 3.154E7;
 
@@ -45,6 +50,7 @@ contract Borrow {
         sessionLoan.loanSize = _loanSize;
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
+        sessionLoan.borrowedDate = block.timestamp;
         sessionLoan.payedBack = false;
 
         USDT_Borrow.transfer(msg.sender, _loanSize);
@@ -107,6 +113,21 @@ contract Borrow {
                 currentIndex++;
             }
         }
+    }
+
+    function subtractInterest(uint256 _nonce) public {
+
+        LoanParams storage sessionLoan = loan[_nonce];
+        uint256 timestamp = block.timestamp - sessionLoan.borrowedDate;
+
+        uint256 interest = (sessionLoan.loanSize * interestRate * timestamp) / (365 days);
+
+        uint256 interestToSubract = interest - interestSubtracted[msg.sender];
+
+        sessionLoan.collateral -= interestToSubract;
+
+        interestSubtracted[msg.sender] += interestToSubract;
+
     }
 
 
