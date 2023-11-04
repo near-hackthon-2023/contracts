@@ -8,12 +8,9 @@ import {Lending} from "src/Lending.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
-/**
- * @title Master
- * @author CoreFi-Cash Technical Team
- * @notice Master contract
- *
- */
+/// @title Master
+/// @author CoreFi-Cash Technical Team
+/// @notice Master contract
 contract Master is Borrow, Lending {
     /// @dev USDC contract interface
     IERC20 private immutable USDT;
@@ -21,14 +18,9 @@ contract Master is Borrow, Lending {
     /// @dev PriceFetcher contract interface
     IPriceFetcher private immutable priceFetcher;
 
-    /**
-     * @notice
-     *  Master Constructor
-     *
-     * @param _USDT USDT contract address
-     * @param _priceFetcher Oracle for core-price contract address
-     *
-     */
+    /// @notice Master Constructor
+    /// @param _USDT USDT contract address
+    /// @param _priceFetcher Oracle for core-price contract address
     constructor(
         address _USDT,
         address _priceFetcher
