@@ -11,8 +11,8 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 contract Master is Borrow, Lending {
     /// @dev USDC contract interface
 
-    IERC20 public immutable USDT;
-    IPriceFetcher public immutable priceFetcher;
+    IERC20 private immutable USDT;
+    IPriceFetcher private immutable priceFetcher;
 
     constructor(
         address _USDT,

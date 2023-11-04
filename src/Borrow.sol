@@ -6,9 +6,6 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
 contract Borrow {
 
-    event FetchLatestPrice(uint256 latestPrice);
-    event LogCoreTokenToUSDT(uint256 latestConvertedValue);
-
     /// @dev USDC contract interface
     IERC20 immutable USDT_Borrow;
     IPriceFetcher immutable priceFetcherBorrow;
@@ -41,7 +38,7 @@ contract Borrow {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
-        uint256 amountInUSDT = CoreTokenToUSDT(msg.value);
+        uint256 amountInUSDT = _coreTokenToUSDT(msg.value);
         require(amountInUSDT >= _loanSize * 3/2, "You can't take loan more than you submitted for collateral");
 
         LoanParams storage sessionLoan = loan[nonceBorrow];
@@ -57,11 +54,9 @@ contract Borrow {
         nonceBorrow++;
     }
 
-    function CoreTokenToUSDT(uint256 coreTokenValue) public returns(uint256 _usdtValue) {
+    function _coreTokenToUSDT(uint256 coreTokenValue) internal returns(uint256 _usdtValue) {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
-        emit FetchLatestPrice(dollarPerToken);
         _usdtValue = dollarPerToken * coreTokenValue;
-        emit LogCoreTokenToUSDT(_usdtValue);
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
