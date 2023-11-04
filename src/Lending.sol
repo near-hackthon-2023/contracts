@@ -2,21 +2,22 @@
 
 pragma solidity ^0.8.19;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Lending is ERC20 {
+contract Lending {
 
+    //uint256 public totalFundsAmount;
     uint256 public nonce;
     uint256 public interestRate;
-    uint256 public totalFundsAmount;
     uint256 public totalAvailable = 300;
 
-    constructor() ERC20("FAKE USDT", "USDT") {
-        nonce = 0;
-        totalFundsAmount = 0;
-        interestRate = 0.05 * 10**18; // 5% = 0.05
+    IERC20 public immutable USDT;
 
-        _mint(msg.sender, 100000000);
+    constructor(address _USDT) {
+        //totalFundsAmount = 0;
+        nonce = 0;
+        interestRate = 0.05 * 10**18; // 5% = 0.05
+        USDT = IERC20(_USDT);
     }
 
     struct Deposit {
@@ -25,7 +26,7 @@ contract Lending is ERC20 {
         uint256 interestRate;
     }
 
-    uint256 public year = 365 days;
+    uint256 public immutable year = 365 days;
 
     mapping (address => uint256) private userDepositedAmount;
     mapping (address => Deposit[]) public deposits;
@@ -35,7 +36,7 @@ contract Lending is ERC20 {
     mapping (uint256 => Deposit) public totalDeposits;
 
     modifier hasAmount(uint256 amount) {
-        require(balanceOf(msg.sender) >= amount, "You don't have enough balance");
+        require(USDT.balanceOf(msg.sender) >= amount, "You don't have enough balance");
         _;
     }
 
@@ -43,27 +44,27 @@ contract Lending is ERC20 {
     function depositFunds(uint256 _newDepositAmount) public hasAmount(_newDepositAmount) {
         require(_newDepositAmount > 0, "Can't deposit 0 funds");
         userDepositedAmount[msg.sender] += _newDepositAmount;
-        totalFundsAmount += _newDepositAmount;
+        //totalFundsAmount += _newDepositAmount;
         Deposit storage sessionDeposit = totalDeposits[nonce++];
         sessionDeposit.amount = _newDepositAmount;
         sessionDeposit.timestamp = block.timestamp;
         sessionDeposit.interestRate = interestRate;
         deposits[msg.sender].push(sessionDeposit);
-        _transfer(msg.sender, address(this), _newDepositAmount);
+        USDT.transferFrom(msg.sender, address(this), _newDepositAmount);
     }
 
     // Withdraw Funds
     function withdrawFunds(uint256 _nonce, uint256 _amount) public {
-        require(userDepositedAmount[msg.sender] >= _amount, "Amount of funds deposited is not enough");
+        require(userDepositedAmount[msg.sender] >= _amount && USDT.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
         totalDeposits[_nonce].amount -= _amount;
-        totalFundsAmount -= _amount;
+        //totalFundsAmount -= _amount;
 
-        _transfer(address(this), msg.sender, _amount);
+        USDT.transferFrom(address(this), msg.sender, _amount);
     }
 
     function updateInterestRate() public returns(uint256) {
-        interestRate = interestRate + (totalAvailable / totalFundsAmount) / 10000;
+        interestRate = interestRate + (totalAvailable / USDT.balanceOf(address(this))) / 10000;
         return interestRate;
     }
 
