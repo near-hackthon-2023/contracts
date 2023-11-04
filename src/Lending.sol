@@ -46,7 +46,7 @@ contract Lending {
     }
 
     /// @dev a constant that holds the duration of one year in seconds
-    uint256 ONEYEAR = 3.154E7;
+    uint256 ONEYEAR_LENDING = 3.154E7;
 
     /// @dev
     mapping (address => uint256) private userDepositedAmount;
@@ -124,7 +124,7 @@ contract Lending {
     function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        uint256 _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR;
+        uint256 _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR_LENDING;
 
         _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
     }
