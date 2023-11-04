@@ -35,6 +35,8 @@ contract Borrow {
 
     mapping (address => uint256) private interestSubtracted;
 
+    mapping (address => LoanParams[]) public userLoans;
+
     uint256 ONEYEAR = 3.154E7;
 
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
@@ -53,6 +55,8 @@ contract Borrow {
         sessionLoan.borrowedDate = block.timestamp;
         sessionLoan.payedBack = false;
 
+        userLoans[msg.sender].push(sessionLoan);
+
         USDT_Borrow.transfer(msg.sender, _loanSize);
         nonceBorrow++;
     }
@@ -70,6 +74,8 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
+
+        userLoans[msg.sender][_nonce].payedBack = true;
         USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
     }
 
@@ -127,7 +133,6 @@ contract Borrow {
         sessionLoan.collateral -= interestToSubract;
 
         interestSubtracted[msg.sender] += interestToSubract;
-
     }
 
 
