@@ -1,15 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract Borrow {
+
+    /// @dev USDC contract interface
+    IERC20 public immutable USDT;
+
     uint256 public FAKERESERVE;
     uint256 public nonce;
 
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
-    constructor() {
+    constructor(address _USDT) {
         FAKERESERVE = 10_000;
+        USDT = IERC20(_USDT);
     }
 
     struct LoanParams{
@@ -22,9 +29,11 @@ contract Borrow {
 
     mapping(uint256 => LoanParams) private loan;
 
-    mapping(address => uint256) public _balanceOf;
-
     uint256 public ONEYEAR = 3.154E7;
+
+    function balanceOfB(address _sender) public view returns (uint256 _balance){
+        _balance = USDT.balanceOf(_sender);
+    }
 
     function borrow(uint256 _nonce, uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_nonce == (nonce + 1), "Invalid nonce");
@@ -37,7 +46,7 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
-        _balanceOf[msg.sender] += msg.value;
+        USDT.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
         nonce = _nonce;
     }
@@ -50,7 +59,7 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
-        _balanceOf[msg.sender] -= _amountPayback;
+        USDT.transferFrom(msg.sender, address(this), _amountPayback);
         FAKERESERVE += _amountPayback;
     }
 
