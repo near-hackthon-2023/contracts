@@ -12,8 +12,8 @@ contract Lending {
     uint256 public interestRate;
     uint256 public totalAvailable = 300;
 
-    IERC20 public immutable USDT_Lending;
-    IPriceFetcher public immutable priceFetcherLending;
+    IERC20 private immutable USDT_Lending;
+    IPriceFetcher private immutable priceFetcherLending;
 
     constructor(address _USDT, address _oracle) {
         //totalFundsAmount = 0;
@@ -29,7 +29,7 @@ contract Lending {
         uint256 interestRate;
     }
 
-    uint256 public immutable year = 365 days;
+    uint256 private immutable year = 365 days;
 
     mapping (address => uint256) private userDepositedAmount;
     mapping (address => Deposit[]) public deposits;
@@ -75,14 +75,14 @@ contract Lending {
         return userDepositedAmount[msg.sender];
     }
 
-    function computeYield(uint _depositNonce) public view returns(uint256) {
+    function computeYield(uint _depositNonce) private view returns(uint256) {
         Deposit storage sessionDeposit = deposits[msg.sender][_depositNonce];
         uint256 timestamp = block.timestamp - sessionDeposit.timestamp;
 
         return (sessionDeposit.amount * sessionDeposit.interestRate * timestamp) / year;
     }
 
-    function computeYield(Deposit memory _deposit) public view returns(uint256) {
+    function computeYield(Deposit memory _deposit) private view returns(uint256) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
         return (_deposit.amount * _deposit.interestRate * timestamp) / year;
@@ -94,6 +94,10 @@ contract Lending {
             total += computeYield(deposits[msg.sender][i]);
         }
         return total;
+    }
+
+    function getTreasury() public view returns(uint256 _treasury) {
+        _treasury = USDT_Lending.balanceOf(address(this));
     }
 
     function getTimePassed(uint256 _nonce) public view returns(uint256) {
