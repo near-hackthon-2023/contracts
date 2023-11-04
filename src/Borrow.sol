@@ -2,12 +2,17 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+<<<<<<< Updated upstream
 import { Switchboard } from "@switchboard-xyz/evm.js/contracts/core/testnet/Switchboard.sol";
+=======
+import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
+>>>>>>> Stashed changes
 
 contract Borrow {
 
     /// @dev USDC contract interface
     IERC20 public immutable USDT_Borrow;
+    IPriceFetcher public immutable priceFetcherBorrow;
 
     uint256 public FAKERESERVE;
     uint256 public nonceBorrow;
@@ -15,9 +20,10 @@ contract Borrow {
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
-    constructor(address _USDT) {
+    constructor(address _USDT, address _oracle) {
         FAKERESERVE = 10_000;
         USDT_Borrow = IERC20(_USDT);
+        priceFetcherBorrow = IPriceFetcher(_oracle);
     }
 
     struct LoanParams{
@@ -52,11 +58,18 @@ contract Borrow {
         nonceBorrow = _nonce;
     }
 
+<<<<<<< Updated upstream
     function CoreTokenToUSDT(uint256 coreTokenValue) public returns(uint256) {
         int256 dollarPerToken;
         (dollarPerToken, _) = Switchboard.getLatestResult(0xE746D2c8547691436C42d22Fa0740AEd3DCD289D);
 
         return dollarPerToken * coreTokenValue;
+=======
+    function CoreTokenToUSDT(uint256 coreTokenValue) public returns(uint256 _usdtValue) {
+
+        uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
+        _usdtValue = dollarPerToken * coreTokenValue;
+>>>>>>> Stashed changes
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {

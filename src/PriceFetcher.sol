@@ -4,13 +4,23 @@ pragma solidity ^0.8.13;
 
 import { Switchboard } from "@switchboard-xyz/evm.js/contracts/core/testnet/Switchboard.sol";
 
+<<<<<<< Updated upstream
 interface PriceFetcher {
+=======
+contract PriceFetcher {
+>>>>>>> Stashed changes
     address public feedId = 0xE746D2c8547691436C42d22Fa0740AEd3DCD289D;
     int256 public latestValue;
     uint256 public latestTimestamp;
 
+<<<<<<< Updated upstream
     function fetchLatestResult() external {
         (latestValue, latestTimestamp) = Switchboard.getLatestResult(feedId);
+=======
+    function fetchLatestResult() external returns (int256 _latestValue){
+        (latestValue, latestTimestamp) = Switchboard.getLatestResult(feedId);
+        _latestValue = latestValue;
+>>>>>>> Stashed changes
     }   
 }
 

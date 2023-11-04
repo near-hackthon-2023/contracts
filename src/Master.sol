@@ -6,14 +6,19 @@ import {Borrow} from "src/Borrow.sol";
 import {Lending} from "src/Lending.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
-contract Master is Borrow, Lending{
+contract Master is Borrow, Lending {
     /// @dev USDC contract interface
 
     IERC20 public immutable USDT;
-    
-    constructor(address _USDT) Borrow(_USDT) Lending(_USDT) {
-        USDT = IERC20(_USDT);
-    }
+    IPriceFetcher public immutable priceFetcher;
 
+    constructor(
+        address _USDT,
+        address _priceFetcher
+    ) Borrow(_USDT, _priceFetcher) Lending(_USDT, _priceFetcher) {
+        USDT = IERC20(_USDT);
+        priceFetcher = IPriceFetcher(_priceFetcher);
+    }
 }
