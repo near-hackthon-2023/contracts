@@ -53,10 +53,9 @@ contract Lending {
     }
 
     // Withdraw Funds
-    function withdrawFunds(uint256 _nonce, uint256 _amount) public {
+    function withdrawFunds(uint256 _amount) public {
         require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
-        totalDeposits[_nonce].amount -= _amount;
 
         USDT_Lending.transferFrom(address(this), msg.sender, _amount);
     }
