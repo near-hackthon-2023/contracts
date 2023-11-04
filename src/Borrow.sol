@@ -10,14 +10,12 @@ contract Borrow {
     IERC20 immutable USDT_Borrow;
     IPriceFetcher immutable priceFetcherBorrow;
 
-    uint256 public FAKERESERVE;
     uint256 public nonceBorrow;
 
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
     constructor(address _USDT, address _oracle) {
-        FAKERESERVE = 10_000;
         USDT_Borrow = IERC20(_USDT);
         priceFetcherBorrow = IPriceFetcher(_oracle);
     }
