@@ -200,7 +200,14 @@ contract Borrow {
         }
     }
 
-    function subtractInterest(uint256 _nonce) public {
+    /**
+     * @notice
+     *  Private function to for other function to subtract interest from collateral
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * 
+     */
+    function _subtractInterest(uint256 _nonce) private {
         LoanParams storage sessionLoan = loan[_nonce];
         uint256 timestamp = block.timestamp - sessionLoan.borrowedDate;
         uint256 interest = (sessionLoan.loanSize * interestRate * timestamp) / (365 days);
@@ -218,17 +225,24 @@ contract Borrow {
     4. 1/2 of whats extra to the liquidator
     */
 
+    /**
+     * @notice
+     *  Lets users liquidate illiquid positins
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * 
+     */
     function liquidatePosition(uint256 _nonce) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         uint256[] memory illiquidPositions = monitorIlliquidPositions();
-        require(isNumberInArray(illiquidPositions, _nonce), "No illiquid loan found");
+        require(_isNumberInArray(illiquidPositions, _nonce), "No illiquid loan found");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.payedBack = true;  // Maybe we should do a more nuanced system that shows that the loan actually was liquidated 
         // HERE IT SHOULD BE SOME LOGIC THAT PERFORMS THE SWAP
         // HERE IT SHOULD BE SOME LOGIC WITCH CALCULATES HOW MUCH CORE ABOVE THE LENDING VALUE THAT SHOULD BE DISTRIBUTED
     }
 
-    function isNumberInArray(uint[] memory numberArray, uint numberToCheck) private pure returns (bool _isFound) {
+    function _isNumberInArray(uint[] memory numberArray, uint numberToCheck) private pure returns (bool _isFound) {
         for (uint i = 0; i < numberArray.length; i++) {
             if (numberArray[i] == numberToCheck) {
                 _isFound = true; // Number is found in the array
@@ -237,7 +251,7 @@ contract Borrow {
         _isFound = false; // Number is not in the array
     }
 
-    function testTankLTV(uint256 _nonce, uint256 _newCollateral) private {
+    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.collateral = _newCollateral;
