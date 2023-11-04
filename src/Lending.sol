@@ -31,6 +31,7 @@ contract Lending {
     mapping (address => uint256) private userDepositedAmount;
     mapping (address => Deposit[]) public deposits;
     mapping (address => uint256) private userInterestEarns;
+    mapping (address => uint256) private claimedYield;
     
     // App Deposits
     mapping (uint256 => Deposit) public totalDeposits;
@@ -64,13 +65,6 @@ contract Lending {
         _position = userDepositedAmount[msg.sender];
     }
 
-    function computeYield(uint _depositNonce) private view returns(uint256 _yield) {
-        Deposit storage sessionDeposit = deposits[msg.sender][_depositNonce];
-        uint256 timestamp = block.timestamp - sessionDeposit.timestamp;
-
-        _yield = (sessionDeposit.amount * interestRate * timestamp) / year;
-    }
-
     function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
@@ -82,6 +76,13 @@ contract Lending {
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
             _total += computeYield(deposits[msg.sender][i]);
         }
+    }
+
+    function claimYield() public {
+        uint256 yieldToClaim = getInterestEarnings();
+        uint256 readyToClaim = yieldToClaim - claimedYield[msg.sender];
+        claimedYield[msg.sender] += readyToClaim;
+        msg.sender.transfer(readyToClaim);
     }
 
     function getTreasury() public view returns(uint256 _treasury) {
