@@ -6,6 +6,8 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
 contract Borrow {
 
+    event FetchLatestPrice(uint256 latestPrice);
+
     /// @dev USDC contract interface
     IERC20 public immutable USDT_Borrow;
     IPriceFetcher public immutable priceFetcherBorrow;
@@ -38,11 +40,10 @@ contract Borrow {
         _balance = USDT_Borrow.balanceOf(_sender);
     }
 
-    function borrow(uint256 _nonce, uint256 _loanDuration, uint256 _loanSize) public payable {
-        require(_nonce == (nonceBorrow + 1), "Invalid nonce");
+    function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
-        LoanParams storage sessionLoan = loan[_nonce];
+        LoanParams storage sessionLoan = loan[nonceBorrow];
 
         sessionLoan.borrower = msg.sender;
         sessionLoan.loanSize = _loanSize;
@@ -51,14 +52,22 @@ contract Borrow {
         sessionLoan.payedBack = false;
         USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
-        nonceBorrow = _nonce;
+        nonceBorrow++;
     }
-
 
     function CoreTokenToUSDT(uint256 coreTokenValue) public returns(uint256 _usdtValue) {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
+        emit FetchLatestPrice(dollarPerToken);
         _usdtValue = dollarPerToken * coreTokenValue;
     }
+
+    // function getDollarPerToken() public returns(int256 _dollarPerToken) {
+    //     priceFetcherBorrow.fetchLatestResult();
+    //     _dollarPerToken = priceFetcherBorrow.latestValue();
+    //     emit FetchNewPrice(_dollarPerToken);
+    //     emit TestFetchNewPrice("Testing Event");
+    //     return _dollarPerToken;
+    // }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
