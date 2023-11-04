@@ -19,7 +19,7 @@ contract MasterTest is Test {
         oracle = new OracleMock();
         USDT = new ERC20Mock("USDT", "USDT");
         deal(address(USDT), alice, 100);
-        deal(bob, 100);
+        deal(bob, 100000000);
 
         master = new Master(address(USDT), address(oracle));
 
@@ -36,9 +36,18 @@ contract MasterTest is Test {
     }
 
     function testGetInterestEarnings() public {
+        uint256 collateral = 10000;
+
         vm.startPrank(bob);
-        master.borrow{value: 1}(31536000, 50);
+        master.borrow{value: collateral}(31536000, 50);
         vm.startPrank(alice);
-        emit log_named_uint("interestEarnings", master.getInterestEarnings());
+        skip(60*60*24*365);
+
+        // assertEq(master.getInterestEarnings(), collateral * 5 / 100);
+
+        // Alice gets 5% of the collateral
+        emit log_uint(alice.balance);
+        master.claimYield();
+        emit log_uint(alice.balance);
     }
 }
