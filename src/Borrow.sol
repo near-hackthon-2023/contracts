@@ -9,8 +9,8 @@ contract Borrow {
     event FetchLatestPrice(uint256 latestPrice);
 
     /// @dev USDC contract interface
-    IERC20 public immutable USDT_Borrow;
-    IPriceFetcher public immutable priceFetcherBorrow;
+    IERC20 immutable USDT_Borrow;
+    IPriceFetcher immutable priceFetcherBorrow;
 
     uint256 public FAKERESERVE;
     uint256 public nonceBorrow;
@@ -34,11 +34,7 @@ contract Borrow {
 
     mapping(uint256 => LoanParams) private loan;
 
-    uint256 public ONEYEAR = 3.154E7;
-
-    function balanceOfB(address _sender) public view returns (uint256 _balance){
-        _balance = USDT_Borrow.balanceOf(_sender);
-    }
+    uint256 ONEYEAR = 3.154E7;
 
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
@@ -151,7 +147,7 @@ contract Borrow {
         _isFound = false; // Number is not in the array
     }
 
-    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
+    function testTankLTV(uint256 _nonce, uint256 _newCollateral) private {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.collateral = _newCollateral;
