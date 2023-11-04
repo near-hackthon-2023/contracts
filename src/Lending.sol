@@ -10,13 +10,11 @@ contract Lending {
     //uint256 public totalFundsAmount;
     uint256 public nonceLending;
     uint256 public interestRate;
-    uint256 public totalAvailable = 300;
 
     IERC20 private immutable USDT_Lending;
     IPriceFetcher private immutable priceFetcherLending;
 
     constructor(address _USDT, address _oracle) {
-        //totalFundsAmount = 0;
         nonceLending = 0;
         interestRate = 0.05 * 10**18; // 5% = 0.05
         USDT_Lending = IERC20(_USDT);
@@ -26,7 +24,6 @@ contract Lending {
     struct Deposit {
         uint256 amount;
         uint256 timestamp;
-        uint256 interestRate;
     }
 
     uint256 private immutable year = 365 days;
@@ -47,11 +44,9 @@ contract Lending {
     function depositFunds(uint256 _newDepositAmount) public {
         require(_newDepositAmount > 0, "Can't deposit 0 funds");
         userDepositedAmount[msg.sender] += _newDepositAmount;
-        //totalFundsAmount += _newDepositAmount;
         Deposit storage sessionDeposit = totalDeposits[nonceLending++];
         sessionDeposit.amount = _newDepositAmount;
         sessionDeposit.timestamp = block.timestamp;
-        sessionDeposit.interestRate = interestRate;
         deposits[msg.sender].push(sessionDeposit);
         USDT_Lending.transferFrom(msg.sender, address(this), _newDepositAmount);
     }
@@ -61,46 +56,35 @@ contract Lending {
         require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
         totalDeposits[_nonce].amount -= _amount;
-        //totalFundsAmount -= _amount;
 
         USDT_Lending.transferFrom(address(this), msg.sender, _amount);
     }
 
-    function updateInterestRate() public returns(uint256) {
-        interestRate = interestRate + (totalAvailable / USDT_Lending.balanceOf(address(this))) / 10000;
-        return interestRate;
+    function activeLendPosition() public view returns(uint256 _position) {
+        _position = userDepositedAmount[msg.sender];
     }
 
-    function activeLendPosition() public view returns(uint256) {
-        return userDepositedAmount[msg.sender];
-    }
-
-    function computeYield(uint _depositNonce) private view returns(uint256) {
+    function computeYield(uint _depositNonce) private view returns(uint256 _yield) {
         Deposit storage sessionDeposit = deposits[msg.sender][_depositNonce];
         uint256 timestamp = block.timestamp - sessionDeposit.timestamp;
 
-        return (sessionDeposit.amount * sessionDeposit.interestRate * timestamp) / year;
+        _yield = (sessionDeposit.amount * interestRate * timestamp) / year;
     }
 
-    function computeYield(Deposit memory _deposit) private view returns(uint256) {
+    function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        return (_deposit.amount * _deposit.interestRate * timestamp) / year;
+        _yield = (_deposit.amount * interestRate * timestamp) / year;
     }
 
-    function getInterestEarnings() public view returns(uint256) {
-        uint256 total = 0;
+    function getInterestEarnings() public view returns(uint256 _total) {
+        _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
-            total += computeYield(deposits[msg.sender][i]);
+            _total += computeYield(deposits[msg.sender][i]);
         }
-        return total;
     }
 
     function getTreasury() public view returns(uint256 _treasury) {
         _treasury = USDT_Lending.balanceOf(address(this));
-    }
-
-    function getTimePassed(uint256 _nonce) public view returns(uint256) {
-        return (block.timestamp - totalDeposits[_nonce].timestamp) * 10**18 / year;
     }
 }
