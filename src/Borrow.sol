@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
 
 contract Borrow {
     uint256 public FAKERESERVE;
@@ -22,7 +22,7 @@ contract Borrow {
 
     mapping(uint256 => LoanParams) private loan;
 
-    mapping(address => uint256) public balanceOfB;
+    mapping(address => uint256) public _balanceOf;
 
     uint256 public ONEYEAR = 3.154E7;
 
@@ -37,7 +37,7 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
-        balanceOfB[msg.sender] += msg.value;
+        _balanceOf[msg.sender] += msg.value;
         FAKERESERVE -= _loanSize;
         nonce = _nonce;
     }
@@ -50,7 +50,7 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
-        balanceOfB[msg.sender] -= _amountPayback;
+        _balanceOf[msg.sender] -= _amountPayback;
         FAKERESERVE += _amountPayback;
     }
 
@@ -124,9 +124,9 @@ contract Borrow {
         _isFound = false; // Number is not in the array
     }
 
-    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
-        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
-        LoanParams storage sessionLoan = loan[_nonce];
-        sessionLoan.collateral = _newCollateral;
-    }
+    // function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
+    //     require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+    //     LoanParams storage sessionLoan = loan[_nonce];
+    //     sessionLoan.collateral = _newCollateral;
+    // }
 }
