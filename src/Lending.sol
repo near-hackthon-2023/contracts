@@ -14,13 +14,7 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 contract Lending {
     /// @dev nonce identifier for lender
     uint256 public nonceLending;
-<<<<<<< HEAD
-    
-    /// @dev interest rate initiation
-    uint256 public interestRate;
-=======
     uint256 public interestRate = 0.05 * 10**18; // 5% = 0.05;
->>>>>>> fec5346 (add test for claimYield)
 
     /// @dev USDC contract interface
     IERC20 immutable USDT_Lending;
@@ -167,33 +161,4 @@ contract Lending {
     function getDepositedAmountByAddress(address user ) public view returns(uint256 _amount) {
         _amount = userDepositedAmount[user];
     }
-<<<<<<< HEAD
-
-    /**
-     * @notice
-     *  lets users claim their yield
-     *
-     */
-    function claimYield() public {
-        uint256 yieldToClaim = getInterestEarnings();
-        uint256 readyToClaim = yieldToClaim - claimedYield[msg.sender];
-        claimedYield[msg.sender] += readyToClaim;
-
-        address payable recipient = payable(msg.sender);
-        recipient.transfer(readyToClaim);
-    }
-
-    /**
-     * @notice
-     *  Let a user check the contract treasury
-     *
-     * 
-     * @return _treasury returning the trasury
-     *
-     */
-    function getTreasury() public view returns(uint256 _treasury) {
-        _treasury = USDT_Lending.balanceOf(address(this));
-    }
-=======
->>>>>>> fec5346 (add test for claimYield)
 }
