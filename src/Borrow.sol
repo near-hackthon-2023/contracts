@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -133,9 +133,9 @@ contract Borrow {
         _isFound = false; // Number is not in the array
     }
 
-    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
-        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
-        LoanParams storage sessionLoan = loan[_nonce];
-        sessionLoan.collateral = _newCollateral;
-    }
+    // function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
+    //     require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+    //     LoanParams storage sessionLoan = loan[_nonce];
+    //     sessionLoan.collateral = _newCollateral;
+    // }
 }
