@@ -82,7 +82,9 @@ contract Lending {
         uint256 yieldToClaim = getInterestEarnings();
         uint256 readyToClaim = yieldToClaim - claimedYield[msg.sender];
         claimedYield[msg.sender] += readyToClaim;
-        msg.sender.transfer(readyToClaim);
+
+        address payable recipient = payable(msg.sender);
+        recipient.transfer(readyToClaim);
     }
 
     function getTreasury() public view returns(uint256 _treasury) {
