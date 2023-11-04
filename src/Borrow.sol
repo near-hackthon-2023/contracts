@@ -4,24 +4,46 @@ pragma solidity ^0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
+
+/**
+ * @title Borrow
+ * @author CoreFi-Cash Technical Team
+ * @notice Borrow contract
+ *
+ */
 contract Borrow {
 
     /// @dev USDC contract interface
     IERC20 immutable USDT_Borrow;
+
+    /// @dev PriceFetcher contract interface
     IPriceFetcher immutable priceFetcherBorrow;
 
+    /// @dev Nonce to show the
     uint256 public nonceBorrow;
 
+    /// @dev Interest rate 
     uint256 private interestRate = 0.05 * 10**18;
 
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
+    /**
+     * @notice
+     *  Borrow Constructor
+     *
+     * @param _USDT USDT contract address
+     * @param _oracle Oracle for core-price contract address
+     *
+     */
     constructor(address _USDT, address _oracle) {
+        // Set USDT contract
         USDT_Borrow = IERC20(_USDT);
+        // Set price oracle contract
         priceFetcherBorrow = IPriceFetcher(_oracle);
     }
 
+    /// @dev LoanParams to keep track of active loans
     struct LoanParams{
         address borrower;
         uint256 loanSize;
@@ -31,11 +53,22 @@ contract Borrow {
         bool payedBack;
     }
 
+    /// @dev mapping that uses a nonce to identify a specific loan
     mapping(uint256 => LoanParams) private loan;
 
-    mapping (address => uint256) private interestSubtracted;
-
+    
+    /// @dev a constant that holds the duration of one year in seconds
     uint256 ONEYEAR = 3.154E7;
+
+    /**
+     * @notice
+     *  Let a user Borrow. This is a payeable function.
+     *
+     * @param _loanDuration duration of loan in seconds
+     * @param _loanSize The value of USDT that the user wants to lend
+     *
+     * @param msg.value will act as the collateral
+     */
 
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
@@ -56,6 +89,16 @@ contract Borrow {
         USDT_Borrow.transfer(msg.sender, _loanSize);
         nonceBorrow++;
     }
+
+    /**
+     * @notice
+     *  Let a user Borrow. This is a payeable function.
+     *
+     * @param _loanDuration duration of loan in seconds
+     * @param _loanSize The value of USDT that the user wants to lend
+     *
+     * @param msg.value will act as the collateral
+     */
 
     function _coreTokenToUSDT(uint256 coreTokenValue) internal returns(uint256 _usdtValue) {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
