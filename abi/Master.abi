@@ -28,6 +28,11 @@
         {
           "components": [
             {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
               "internalType": "address",
               "name": "borrower",
               "type": "address"
@@ -264,6 +269,11 @@
         {
           "components": [
             {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
               "internalType": "address",
               "name": "borrower",
               "type": "address"
@@ -406,9 +416,14 @@
           "internalType": "uint256",
           "name": "_nonce",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_newCollateral",
+          "type": "uint256"
         }
       ],
-      "name": "subtractInterest",
+      "name": "testTankLTV",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -465,6 +480,11 @@
       ],
       "name": "userLoans",
       "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "nonce",
+          "type": "uint256"
+        },
         {
           "internalType": "address",
           "name": "borrower",
