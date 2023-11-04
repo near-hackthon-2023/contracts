@@ -41,7 +41,7 @@ contract Lending {
     }
 
     //Deposit Funds:
-    function depositFunds(uint256 _newDepositAmount) public hasAmount(_newDepositAmount) {
+    function depositFunds(uint256 _newDepositAmount) public {
         require(_newDepositAmount > 0, "Can't deposit 0 funds");
         userDepositedAmount[msg.sender] += _newDepositAmount;
         //totalFundsAmount += _newDepositAmount;
