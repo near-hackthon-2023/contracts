@@ -18,23 +18,27 @@ contract MasterTest is Test {
     function setUp() public {
         oracle = new OracleMock();
         USDT = new ERC20Mock("USDT", "USDT");
-        deal(address(USDT), alice, 1000000);
-        deal(bob, 1000000);
+        deal(address(USDT), alice, 100);
+        deal(bob, 100);
 
         master = new Master(address(USDT), address(oracle));
-    }
 
-    function testDepositAndBorrow() public {
         vm.startPrank(alice);
 
-        USDT.approve(address(master), 1000000);
-        master.depositFunds(1000000);
+        USDT.approve(address(master), 100);
+        master.depositFunds(100);
+    }
 
-        assertEq(USDT.balanceOf(address(alice)), 0);
-        assertEq(USDT.balanceOf(address(master)), 1000000);
+    function testActiveLendPosition() public {
+        assertEq(master.activeLendPosition(), 100);
+        vm.prank(bob);
+        assertEq(master.activeLendPosition(), 0);
+    }
 
+    function testGetInterestEarnings() public {
         vm.startPrank(bob);
-        master.borrow{value: 100000}(31536000, 100000);
-
+        master.borrow{value: 1}(31536000, 50);
+        vm.startPrank(alice);
+        emit log_named_uint("interestEarnings", master.getInterestEarnings());
     }
 }
