@@ -92,19 +92,27 @@ contract Borrow {
 
     /**
      * @notice
-     *  Let a user Borrow. This is a payeable function.
+     *  Internal function for other functions to convert core amount in USDT value
      *
-     * @param _loanDuration duration of loan in seconds
-     * @param _loanSize The value of USDT that the user wants to lend
+     * @param _coreTokenAmount amounts of coretokens
      *
-     * @param msg.value will act as the collateral
+     * @return _usdtValue returns the USDT value
      */
 
-    function _coreTokenToUSDT(uint256 coreTokenValue) internal returns(uint256 _usdtValue) {
+    function _coreTokenToUSDT(uint256 coreTokenAmount) internal returns(uint256 _usdtValue) {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
-        _usdtValue = dollarPerToken * coreTokenValue;
+        _usdtValue = dollarPerToken * coreTokenAmount;
     }
 
+    /**
+     * @notice
+     *  Let a user repay their dept
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * @param _to payeable address to repay the loan and get back their collateral
+     * @param _amountPayback The value of USDT that the user tries to repay, must cover the full loan
+     *
+     */
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         require(loan[_nonce].borrower == msg.sender, "You're not authorized");
@@ -116,13 +124,31 @@ contract Borrow {
         USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
     }
 
+    /**
+     * @notice
+     *  Let a user top up their collateral. This is a payable function
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * 
+     * @param msg.value the amount of core tokens used to top up collateral
+     *
+     */
     function topUpCollateral(uint256 _nonce) public payable{
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         require(loan[_nonce].borrower == msg.sender, "You're not authorized");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.collateral += msg.value;
     }
-    
+
+    /**
+     * @notice
+     *  Let a user check their current active borrow positions
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * 
+     * @return _loanParams the amount of core tokens used to top up collateral
+     *
+     */
     function activeBorrowPosition(uint256 _nonce) public view returns(LoanParams memory _loanParams){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         _loanParams = loan[_nonce];
