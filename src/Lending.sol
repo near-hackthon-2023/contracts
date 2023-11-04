@@ -64,13 +64,15 @@ contract Lending {
         _position = userDepositedAmount[msg.sender];
     }
 
-    function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
+    function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        _yield = (_deposit.amount * interestRate * timestamp) / year;
+        uint256 _yield = (_deposit.amount * interestRate * timestamp) / year;
+
+        _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
     }
 
-    function getInterestEarnings() public view returns(uint256 _total) {
+    function getInterestEarnings() public returns(uint256 _total) {
         _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
             _total += computeYield(deposits[msg.sender][i]);
