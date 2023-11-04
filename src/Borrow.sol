@@ -41,8 +41,8 @@ contract Borrow {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
-        uint256 amountInUSDT = _coreTokenToUSDT(msg.value);
-        require(amountInUSDT >= _loanSize * 3/2, "You can't take loan more than you submitted for collateral");
+        uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
+        require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
         LoanParams storage sessionLoan = loan[nonceBorrow];
 
