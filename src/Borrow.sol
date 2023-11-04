@@ -29,8 +29,6 @@ contract Borrow {
 
     mapping(uint256 => LoanParams) private loan;
 
-    //mapping(address => uint256) public balanceOfB;
-
     uint256 public ONEYEAR = 3.154E7;
 
     function balanceOfB(address _sender) public view returns (uint256 _balance){
@@ -48,8 +46,7 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
-        // Replace with logic to transfer from this address to msg.sender
-        balanceOfB[msg.sender] += msg.value;
+        USDT.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
         nonce = _nonce;
     }
@@ -62,8 +59,7 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
-        // Replace with logic to transfer to this address from msg.sender
-        balanceOfB[msg.sender] -= _amountPayback;
+        USDT.transferFrom(msg.sender, address(this), _amountPayback);
         FAKERESERVE += _amountPayback;
     }
 
