@@ -47,7 +47,7 @@ contract Borrow {
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
 
-        USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
+        USDT_Borrow.transfer(msg.sender, _loanSize);
         nonceBorrow++;
     }
 
