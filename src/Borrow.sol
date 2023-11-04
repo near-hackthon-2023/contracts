@@ -19,7 +19,7 @@ contract Borrow {
     /// @dev PriceFetcher contract interface
     IPriceFetcher immutable priceFetcherBorrow;
 
-    /// @dev Nonce to show the
+    /// @dev Nonce identifier for a borrow
     uint256 public nonceBorrow;
 
     /// @dev Interest rate 

@@ -12,13 +12,26 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
  *
  */
 contract Lending {
-
+    /// @dev nonce identifier for lender
     uint256 public nonceLending;
+    
+    /// @dev interest rate initiation
     uint256 public interestRate;
 
-    IERC20 private immutable USDT_Lending;
-    IPriceFetcher private immutable priceFetcherLending;
+    /// @dev USDC contract interface
+    IERC20 immutable USDT_Borrow;
 
+    /// @dev PriceFetcher contract interface
+    IPriceFetcher immutable priceFetcherBorrow;
+
+    /**
+     * @notice
+     *  Lending Constructor
+     *
+     * @param _USDT USDT contract address
+     * @param _oracle Oracle for core-price contract address
+     *
+     */
     constructor(address _USDT, address _oracle) {
         nonceLending = 0;
         interestRate = 0.05 * 10**18; // 5% = 0.05
@@ -26,12 +39,14 @@ contract Lending {
         priceFetcherLending = IPriceFetcher(_oracle);
     }
 
+    /// @dev struct for deposit Params
     struct Deposit {
         uint256 amount;
         uint256 timestamp;
     }
 
-    uint256 private immutable year = 365 days;
+    /// @dev a constant that holds the duration of one year in seconds
+    uint256 ONEYEAR = 3.154E7;
 
     mapping (address => uint256) private userDepositedAmount;
     mapping (address => Deposit[]) public deposits;
@@ -73,7 +88,7 @@ contract Lending {
     function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        _yield = (_deposit.amount * interestRate * timestamp) / year;
+        _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR;
     }
 
     function getInterestEarnings() public view returns(uint256 _total) {
