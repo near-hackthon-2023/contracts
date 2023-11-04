@@ -62,7 +62,7 @@ contract Borrow {
     mapping (address => LoanParams[]) public userLoans;
 
     /// @dev a constant that holds the duration of one year in seconds
-    uint256 ONEYEAR = 3.154E7;
+    uint256 ONEYEAR_BORROW = 3.154E7;
 
     /**
      * @notice
@@ -75,14 +75,14 @@ contract Borrow {
      */
 
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
-        require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
+        require(_loanDuration > 0 && _loanDuration < ONEYEAR_BORROW, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
         uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
         require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
         LoanParams storage sessionLoan = loan[nonceBorrow];
-        session.nonce = nonceBorrow;
+        sessionLoan.nonce = nonceBorrow;
         sessionLoan.borrower = msg.sender;
         sessionLoan.loanSize = _loanSize;
         sessionLoan.collateral = msg.value;
@@ -126,6 +126,7 @@ contract Borrow {
         require(loan[_nonce].loanSize == _amountPayback, "Not enough repayed");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.payedBack = true;
+        _subtractInterest(_nonce);
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
 
