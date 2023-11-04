@@ -5,9 +5,14 @@ pragma solidity ^0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
+/**
+ * @title Lending
+ * @author CoreFi-Cash Technical Team
+ * @notice Lending contract
+ *
+ */
 contract Lending {
 
-    //uint256 public totalFundsAmount;
     uint256 public nonceLending;
     uint256 public interestRate;
 
