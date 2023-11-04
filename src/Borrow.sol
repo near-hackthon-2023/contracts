@@ -45,6 +45,7 @@ contract Borrow {
 
     /// @dev LoanParams to keep track of active loans
     struct LoanParams{
+        uint256 nonce;
         address borrower;
         uint256 loanSize;
         uint256 collateral;
@@ -81,7 +82,7 @@ contract Borrow {
         require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
         LoanParams storage sessionLoan = loan[nonceBorrow];
-
+        session.nonce = nonceBorrow;
         sessionLoan.borrower = msg.sender;
         sessionLoan.loanSize = _loanSize;
         sessionLoan.collateral = msg.value;
