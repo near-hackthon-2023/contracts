@@ -57,7 +57,7 @@ contract Lending {
         require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
 
-        USDT_Lending.transferFrom(address(this), msg.sender, _amount);
+        USDT_Lending.transfer(msg.sender, _amount);
     }
 
     function activeLendPosition() public view returns(uint256 _position) {
