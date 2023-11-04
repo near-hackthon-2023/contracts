@@ -103,17 +103,40 @@ contract Lending {
         USDT_Lending.transferFrom(address(this), msg.sender, _amount);
     }
 
-
+    /**
+     * @notice
+     *  Let a user check their current active lending positions
+     *
+     * 
+     * @return _position returning the position
+     *
+     */
     function activeLendPosition() public view returns(uint256 _position) {
         _position = userDepositedAmount[msg.sender];
     }
 
+    /**
+     * @notice
+     *  Private function to compute the current yield
+     *
+     * @param _deposit deposition params
+     *
+     * @return _yield Amount of yield the user can claim
+     */
     function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
         _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR;
     }
 
+    /**
+     * @notice
+     *  Let a user check their claimable yield
+     *
+     * 
+     * @return _total returning the total amounht claimable
+     *
+     */
     function getInterestEarnings() public view returns(uint256 _total) {
         _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
@@ -121,6 +144,11 @@ contract Lending {
         }
     }
 
+    /**
+     * @notice
+     *  lets users claim their yield
+     *
+     */
     function claimYield() public {
         uint256 yieldToClaim = getInterestEarnings();
         uint256 readyToClaim = yieldToClaim - claimedYield[msg.sender];
@@ -130,6 +158,14 @@ contract Lending {
         recipient.transfer(readyToClaim);
     }
 
+    /**
+     * @notice
+     *  Let a user check the contract treasury
+     *
+     * 
+     * @return _treasury returning the trasury
+     *
+     */
     function getTreasury() public view returns(uint256 _treasury) {
         _treasury = USDT_Lending.balanceOf(address(this));
     }
