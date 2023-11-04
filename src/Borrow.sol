@@ -1,22 +1,22 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Borrow {
 
     /// @dev USDC contract interface
-    IERC20 public immutable USDT;
+    IERC20 public immutable USDT_Borrow;
 
     uint256 public FAKERESERVE;
-    uint256 public nonce;
+    uint256 public nonceBorrow;
 
     /// @dev denominator used for multiplier (10_000 = 1)
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
     constructor(address _USDT) {
         FAKERESERVE = 10_000;
-        USDT = IERC20(_USDT);
+        USDT_Borrow = IERC20(_USDT);
     }
 
     struct LoanParams{
@@ -32,11 +32,11 @@ contract Borrow {
     uint256 public ONEYEAR = 3.154E7;
 
     function balanceOfB(address _sender) public view returns (uint256 _balance){
-        _balance = USDT.balanceOf(_sender);
+        _balance = USDT_Borrow.balanceOf(_sender);
     }
 
     function borrow(uint256 _nonce, uint256 _loanDuration, uint256 _loanSize) public payable {
-        require(_nonce == (nonce + 1), "Invalid nonce");
+        require(_nonce == (nonceBorrow + 1), "Invalid nonce");
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
         LoanParams storage sessionLoan = loan[_nonce];
@@ -46,9 +46,9 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
-        USDT.transferFrom(address(this), msg.sender, _loanSize);
+        USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
-        nonce = _nonce;
+        nonceBorrow = _nonce;
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
@@ -59,7 +59,7 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
-        USDT.transferFrom(msg.sender, address(this), _amountPayback);
+        USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
         FAKERESERVE += _amountPayback;
     }
 
@@ -82,7 +82,7 @@ contract Borrow {
     }
 
     function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
-        uint256 amountOfLoans = nonce;
+        uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
         
         // First, count the number of illiquid positions
@@ -133,9 +133,9 @@ contract Borrow {
         _isFound = false; // Number is not in the array
     }
 
-    // function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
-    //     require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
-    //     LoanParams storage sessionLoan = loan[_nonce];
-    //     sessionLoan.collateral = _newCollateral;
-    // }
+    function testTankLTV(uint256 _nonce, uint256 _newCollateral) public {
+        require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
+        LoanParams storage sessionLoan = loan[_nonce];
+        sessionLoan.collateral = _newCollateral;
+    }
 }
