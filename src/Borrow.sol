@@ -48,15 +48,18 @@ contract Borrow {
         address borrower;
         uint256 loanSize;
         uint256 collateral;
+        uint256 interestSubtracted;
         uint256 borrowedDate;
         uint256 dueDate;
         bool payedBack;
+        bool liquidated;
     }
 
     /// @dev mapping that uses a nonce to identify a specific loan
-    mapping(uint256 => LoanParams) private loan;
+    mapping(uint256 => LoanParams) private loan; 
 
-    
+    mapping (address => LoanParams[]) public userLoans;
+
     /// @dev a constant that holds the duration of one year in seconds
     uint256 ONEYEAR = 3.154E7;
 
@@ -85,6 +88,9 @@ contract Borrow {
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.borrowedDate = block.timestamp;
         sessionLoan.payedBack = false;
+        sessionLoan.liquidated = false;
+
+        userLoans[msg.sender].push(sessionLoan);
 
         USDT_Borrow.transfer(msg.sender, _loanSize);
         nonceBorrow++;
@@ -121,6 +127,8 @@ contract Borrow {
         sessionLoan.payedBack = true;
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
+
+        userLoans[msg.sender][_nonce].payedBack = true;
         USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
     }
 
@@ -163,10 +171,10 @@ contract Borrow {
      * @return _ltv returning the ltv 1% = 100 
      *
      */
-    function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
+    function checkLTV(uint256 _nonce) public returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
-        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / sessionLoan.collateral);
+        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDT(sessionLoan.collateral));
     }
 
     /**
@@ -176,7 +184,8 @@ contract Borrow {
      * @return _ltv returning a list of nonces for the illiquid positions
      *
      */
-    function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
+
+    function monitorIlliquidPositions() public returns (uint256[] memory _illiquidPositions) {
         uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
         
@@ -211,9 +220,15 @@ contract Borrow {
         LoanParams storage sessionLoan = loan[_nonce];
         uint256 timestamp = block.timestamp - sessionLoan.borrowedDate;
         uint256 interest = (sessionLoan.loanSize * interestRate * timestamp) / (365 days);
-        uint256 interestToSubract = interest - interestSubtracted[msg.sender];
+        uint256 interestToSubract = interest - sessionLoan.interestSubtracted;
+
         sessionLoan.collateral -= interestToSubract;
-        interestSubtracted[msg.sender] += interestToSubract;
+
+        sessionLoan.interestSubtracted += interestToSubract;
+    }
+
+    function getUserLoans(address user) public view returns(LoanParams[] memory _loans) {
+        _loans = userLoans[user];
     }
 
 

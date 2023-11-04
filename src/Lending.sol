@@ -94,13 +94,12 @@ contract Lending {
      * @param _amount Amount they want to withdraw
      *
      */
+    function withdrawFunds(uint256 _amount) public {
 
-    function withdrawFunds(uint256 _nonce, uint256 _amount) public {
         require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
-        totalDeposits[_nonce].amount -= _amount;
 
-        USDT_Lending.transferFrom(address(this), msg.sender, _amount);
+        USDT_Lending.transfer(msg.sender, _amount);
     }
 
     /**
@@ -123,10 +122,12 @@ contract Lending {
      *
      * @return _yield Amount of yield the user can claim
      */
-    function computeYield(Deposit memory _deposit) private view returns(uint256 _yield) {
+    function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR;
+        uint256 _yield = (_deposit.amount * interestRate * timestamp) / year;
+
+        _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
     }
 
     /**
@@ -137,11 +138,19 @@ contract Lending {
      * @return _total returning the total amounht claimable
      *
      */
-    function getInterestEarnings() public view returns(uint256 _total) {
+    function getInterestEarnings() public returns(uint256 _total) {
         _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
             _total += computeYield(deposits[msg.sender][i]);
         }
+    }
+
+    function getDepositsByAddress(address user) public view returns(Deposit[] memory _deposits) {
+        _deposits = deposits[user];
+    }
+
+    function getDepositedAmountByAddress(address user ) public view returns(uint256 _amount) {
+        _amount = userDepositedAmount[user];
     }
 
     /**
