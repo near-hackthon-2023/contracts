@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { Switchboard } from "@switchboard-xyz/evm.js/contracts/core/testnet/Switchboard.sol";
 
 contract Borrow {
 
@@ -49,6 +50,13 @@ contract Borrow {
         USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
         nonceBorrow = _nonce;
+    }
+
+    function CoreTokenToUSDT(uint256 coreTokenValue) public returns(uint256) {
+        int256 dollarPerToken;
+        (dollarPerToken, _) = Switchboard.getLatestResult(0xE746D2c8547691436C42d22Fa0740AEd3DCD289D);
+
+        return dollarPerToken * coreTokenValue;
     }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
