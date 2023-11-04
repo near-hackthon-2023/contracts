@@ -26,14 +26,14 @@ contract Borrow {
         address borrower;
         uint256 loanSize;
         uint256 collateral;
+        uint256 interestSubtracted;
         uint256 borrowedDate;
         uint256 dueDate;
         bool payedBack;
+        bool liquidated;
     }
 
-    mapping(uint256 => LoanParams) private loan;
-
-    mapping (address => uint256) private interestSubtracted;
+    mapping(uint256 => LoanParams) private loan;    
 
     mapping (address => LoanParams[]) public userLoans;
 
@@ -54,6 +54,7 @@ contract Borrow {
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.borrowedDate = block.timestamp;
         sessionLoan.payedBack = false;
+        sessionLoan.liquidated = false;
 
         userLoans[msg.sender].push(sessionLoan);
 
@@ -128,11 +129,15 @@ contract Borrow {
 
         uint256 interest = (sessionLoan.loanSize * interestRate * timestamp) / (365 days);
 
-        uint256 interestToSubract = interest - interestSubtracted[msg.sender];
+        uint256 interestToSubract = interest - sessionLoan.interestSubtracted;
 
         sessionLoan.collateral -= interestToSubract;
 
-        interestSubtracted[msg.sender] += interestToSubract;
+        sessionLoan.interestSubtracted += interestToSubract;
+    }
+
+    function getUserLoans(address user) public view returns(LoanParams[] memory _loans) {
+        _loans = userLoans[user];
     }
 
 
