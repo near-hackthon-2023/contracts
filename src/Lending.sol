@@ -48,20 +48,34 @@ contract Lending {
     /// @dev a constant that holds the duration of one year in seconds
     uint256 ONEYEAR = 3.154E7;
 
+    /// @dev
     mapping (address => uint256) private userDepositedAmount;
+
+    /// @dev
     mapping (address => Deposit[]) public deposits;
+
+    /// @dev
     mapping (address => uint256) private userInterestEarns;
+
+    /// @dev
     mapping (address => uint256) private claimedYield;
     
-    // App Deposits
+    /// @dev App Deposits
     mapping (uint256 => Deposit) public totalDeposits;
 
+    /// @notice hasAmount is a modifier that controlls that userbalance is enough
     modifier hasAmount(uint256 amount) {
         require(USDT_Lending.balanceOf(msg.sender) >= amount, "You don't have enough balance");
         _;
     }
 
-    //Deposit Funds:
+    /**
+     * @notice
+     *  Let a user deposit funds as a lender
+     *
+     * @param _newDepositAmount Amount of funds thAmount of funds that the user wants to deposit
+     *
+     */
     function depositFunds(uint256 _newDepositAmount) public {
         require(_newDepositAmount > 0, "Can't deposit 0 funds");
         userDepositedAmount[msg.sender] += _newDepositAmount;
@@ -72,7 +86,15 @@ contract Lending {
         USDT_Lending.transferFrom(msg.sender, address(this), _newDepositAmount);
     }
 
-    // Withdraw Funds
+    /**
+     * @notice
+     *  Lets a lender withdraw their funds from the borrow pool
+     *
+     * @param _nonce the unique identifier for the lothe unique identifier for the loan
+     * @param _amount Amount they want to withdraw
+     *
+     */
+
     function withdrawFunds(uint256 _nonce, uint256 _amount) public {
         require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
@@ -80,6 +102,7 @@ contract Lending {
 
         USDT_Lending.transferFrom(address(this), msg.sender, _amount);
     }
+
 
     function activeLendPosition() public view returns(uint256 _position) {
         _position = userDepositedAmount[msg.sender];
