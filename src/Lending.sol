@@ -3,6 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
 contract Lending {
 
@@ -12,12 +13,14 @@ contract Lending {
     uint256 public totalAvailable = 300;
 
     IERC20 public immutable USDT_Lending;
+    IPriceFetcher public immutable priceFetcherLending;
 
-    constructor(address _USDT) {
+    constructor(address _USDT, address _oracle) {
         //totalFundsAmount = 0;
         nonceLending = 0;
         interestRate = 0.05 * 10**18; // 5% = 0.05
         USDT_Lending = IERC20(_USDT);
+        priceFetcherLending = IPriceFetcher(_oracle);
     }
 
     struct Deposit {
