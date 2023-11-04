@@ -70,7 +70,7 @@ contract Borrow {
      * @param _loanDuration duration of loan in seconds
      * @param _loanSize The value of USDT that the user wants to lend
      *
-     * @param msg.value will act as the collateral
+     * @notice msg.value will act as the collateral
      */
 
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
@@ -105,9 +105,9 @@ contract Borrow {
      * @return _usdtValue returns the USDT value
      */
 
-    function _coreTokenToUSDT(uint256 coreTokenAmount) internal returns(uint256 _usdtValue) {
+    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal returns(uint256 _usdtValue) {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
-        _usdtValue = dollarPerToken * coreTokenAmount;
+        _usdtValue = dollarPerToken * _coreTokenAmount;
     }
 
     /**
@@ -138,7 +138,7 @@ contract Borrow {
      *
      * @param _nonce Nonce as a unique identifier for the loan
      * 
-     * @param msg.value the amount of core tokens used to top up collateral
+     * @notice msg.value the amount of core tokens used to top up collateral
      *
      */
     function topUpCollateral(uint256 _nonce) public payable{
@@ -181,7 +181,7 @@ contract Borrow {
      * @notice
      *  Let a user scan for illiquid positions to liquidate
      * 
-     * @return _ltv returning a list of nonces for the illiquid positions
+     * @return _illiquidPositions returning a list of nonces for the illiquid positions
      *
      */
 

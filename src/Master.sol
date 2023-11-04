@@ -26,7 +26,7 @@ contract Master is Borrow, Lending {
      *  Master Constructor
      *
      * @param _USDT USDT contract address
-     * @param _oracle Oracle for core-price contract address
+     * @param _priceFetcher Oracle for core-price contract address
      *
      */
     constructor(

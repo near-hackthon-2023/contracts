@@ -19,10 +19,10 @@ contract Lending {
     uint256 public interestRate;
 
     /// @dev USDC contract interface
-    IERC20 immutable USDT_Borrow;
+    IERC20 immutable USDT_Lending;
 
     /// @dev PriceFetcher contract interface
-    IPriceFetcher immutable priceFetcherBorrow;
+    IPriceFetcher immutable priceFetcherLending;
 
     /**
      * @notice
@@ -90,7 +90,6 @@ contract Lending {
      * @notice
      *  Lets a lender withdraw their funds from the borrow pool
      *
-     * @param _nonce the unique identifier for the lothe unique identifier for the loan
      * @param _amount Amount they want to withdraw
      *
      */
@@ -120,12 +119,12 @@ contract Lending {
      *
      * @param _deposit deposition params
      *
-     * @return _yield Amount of yield the user can claim
+     * @return _yieldInCore Amount of yield the user can claim
      */
     function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
-        uint256 _yield = (_deposit.amount * interestRate * timestamp) / year;
+        uint256 _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR;
 
         _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
     }
