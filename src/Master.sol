@@ -4,7 +4,13 @@ pragma solidity ^0.8.19;
 import {Borrow} from "src/Borrow.sol";
 import {Lending} from "src/Lending.sol";
 
-contract Master is Borrow, Lending{
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+contract Master is Borrow, Lending{
+    /// @dev USDC contract interface
+    
+    constructor(address _USDT) Borrow(_USDT) Lending(_USDT) {
+        USDT = IERC20(_USDT);
+    }
 
 }
