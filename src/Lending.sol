@@ -77,6 +77,10 @@ contract Lending {
         }
     }
 
+    function getDepositsByAddress(address user) public view returns(Deposit[] memory _deposits) {
+        _deposits = deposits[user];
+    }
+
     function claimYield() public {
         uint256 yieldToClaim = getInterestEarnings();
         uint256 readyToClaim = yieldToClaim - claimedYield[msg.sender];
