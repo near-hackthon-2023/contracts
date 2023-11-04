@@ -91,13 +91,13 @@ contract Borrow {
         _loanParams = loan[_nonce];
     }
     
-    function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
+    function checkLTV(uint256 _nonce) public returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
-        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / sessionLoan.collateral);
+        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDT(sessionLoan.collateral));
     }
 
-    function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
+    function monitorIlliquidPositions() public returns (uint256[] memory _illiquidPositions) {
         uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
         
