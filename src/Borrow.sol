@@ -7,6 +7,7 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 contract Borrow {
 
     event FetchLatestPrice(uint256 latestPrice);
+    event LogCoreTokenToUSDT(uint256 latestConvertedValue);
 
     /// @dev USDC contract interface
     IERC20 immutable USDT_Borrow;
@@ -39,6 +40,10 @@ contract Borrow {
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
+
+        uint256 amountInUSDT = CoreTokenToUSDT(msg.value);
+        require(amountInUSDT >= _loanSize * 3/2, "You can't take loan more than you submitted for collateral");
+
         LoanParams storage sessionLoan = loan[nonceBorrow];
 
         sessionLoan.borrower = msg.sender;
@@ -46,6 +51,7 @@ contract Borrow {
         sessionLoan.collateral = msg.value;
         sessionLoan.dueDate = (block.timestamp + _loanDuration);
         sessionLoan.payedBack = false;
+
         USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
         FAKERESERVE -= _loanSize;
         nonceBorrow++;
@@ -55,15 +61,8 @@ contract Borrow {
         uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
         emit FetchLatestPrice(dollarPerToken);
         _usdtValue = dollarPerToken * coreTokenValue;
+        emit LogCoreTokenToUSDT(_usdtValue);
     }
-
-    // function getDollarPerToken() public returns(int256 _dollarPerToken) {
-    //     priceFetcherBorrow.fetchLatestResult();
-    //     _dollarPerToken = priceFetcherBorrow.latestValue();
-    //     emit FetchNewPrice(_dollarPerToken);
-    //     emit TestFetchNewPrice("Testing Event");
-    //     return _dollarPerToken;
-    // }
 
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
