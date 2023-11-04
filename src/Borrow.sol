@@ -146,7 +146,7 @@ contract Borrow {
      *
      * @param _nonce Nonce as a unique identifier for the loan
      * 
-     * @return _loanParams the amount of core tokens used to top up collateral
+     * @return _loanParams returninc the params of the nonce
      *
      */
     function activeBorrowPosition(uint256 _nonce) public view returns(LoanParams memory _loanParams){
@@ -154,12 +154,28 @@ contract Borrow {
         _loanParams = loan[_nonce];
     }
     
+    /**
+     * @notice
+     *  Let a user check their current LTV ratio
+     *
+     * @param _nonce Nonce as a unique identifier for the loan
+     * 
+     * @return _ltv returning the ltv 1% = 100 
+     *
+     */
     function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
         _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / sessionLoan.collateral);
     }
 
+    /**
+     * @notice
+     *  Let a user scan for illiquid positions to liquidate
+     * 
+     * @return _ltv returning a list of nonces for the illiquid positions
+     *
+     */
     function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
         uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
@@ -185,18 +201,12 @@ contract Borrow {
     }
 
     function subtractInterest(uint256 _nonce) public {
-
         LoanParams storage sessionLoan = loan[_nonce];
         uint256 timestamp = block.timestamp - sessionLoan.borrowedDate;
-
         uint256 interest = (sessionLoan.loanSize * interestRate * timestamp) / (365 days);
-
         uint256 interestToSubract = interest - interestSubtracted[msg.sender];
-
         sessionLoan.collateral -= interestToSubract;
-
         interestSubtracted[msg.sender] += interestToSubract;
-
     }
 
 
