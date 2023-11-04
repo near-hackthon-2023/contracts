@@ -48,7 +48,6 @@ contract Borrow {
         sessionLoan.payedBack = false;
 
         USDT_Borrow.transferFrom(address(this), msg.sender, _loanSize);
-        FAKERESERVE -= _loanSize;
         nonceBorrow++;
     }
 
@@ -66,7 +65,6 @@ contract Borrow {
         _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
         USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
-        FAKERESERVE += _amountPayback;
     }
 
     function topUpCollateral(uint256 _nonce) public payable{
