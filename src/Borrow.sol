@@ -16,7 +16,8 @@ contract Borrow {
     IPriceFetcher immutable priceFetcherBorrow;
 
     /// @dev Nonce identifier for a borrow
-    uint256 public nonceBorrow;
+    //uint256 public nonceBorrow;
+    mapping (address borrower => uint256 nonce) nonceBorrow; 
 
     /// @dev Interest rate 
     uint256 private interestRate = 0.05 * 10**18;
@@ -66,8 +67,8 @@ contract Borrow {
         uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
         require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
-        LoanParams storage sessionLoan = loan[nonceBorrow];
-        sessionLoan.nonce = nonceBorrow;
+        LoanParams storage sessionLoan = loan[nonceBorrow[msg.sender]];
+        sessionLoan.nonce = nonceBorrow[msg.sender];
         sessionLoan.borrower = msg.sender;
         sessionLoan.loanSize = _loanSize;
         sessionLoan.collateral = msg.value;
@@ -79,7 +80,11 @@ contract Borrow {
         userLoans[msg.sender].push(sessionLoan);
 
         USDT_Borrow.transfer(msg.sender, _loanSize);
-        nonceBorrow++;
+        nonceBorrow[msg.sender]++;
+    }
+
+    function checkBorrowNonce() public view returns(uint256 _nonce) {
+        _nonce = nonceBorrow[msg.sender];
     }
 
     /// @notice Internal function for other functions to convert core amount in USDT value
@@ -138,7 +143,7 @@ contract Borrow {
     /// @notice Let a user scan for illiquid positions to liquidate
     /// @return _illiquidPositions returning a list of nonces for the illiquid positions
     function monitorIlliquidPositions() public returns (uint256[] memory _illiquidPositions) {
-        uint256 amountOfLoans = nonceBorrow;
+        uint256 amountOfLoans = nonceBorrow[msg.sender];
         uint256 illiquidCount = 0;
         
         // First, count the number of illiquid positions

@@ -10,7 +10,9 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 /// @notice Lending contract
 contract Lending {
     /// @dev nonce identifier for lender
-    uint256 public nonceLending;
+    //uint256 public nonceLending;
+    mapping (address lender => uint256 nonce) nonceLending;
+
     uint256 public interestRate = 0.05 * 10**18; // 5% = 0.05;
 
     /// @dev USDC contract interface
@@ -23,7 +25,7 @@ contract Lending {
     /// @param _USDT USDT contract address
     /// @param _oracle Oracle for core-price contract address
     constructor(address _USDT, address _oracle) {
-        nonceLending = 0;
+        //nonceLending = 0;
         USDT_Lending = IERC20(_USDT);
         priceFetcherLending = IPriceFetcher(_oracle);
     }
@@ -63,11 +65,15 @@ contract Lending {
     function depositFunds(uint256 _newDepositAmount) public {
         require(_newDepositAmount > 0, "Can't deposit 0 funds");
         userDepositedAmount[msg.sender] += _newDepositAmount;
-        Deposit storage sessionDeposit = totalDeposits[nonceLending++];
+        Deposit storage sessionDeposit = totalDeposits[nonceLending[msg.sender]++];
         sessionDeposit.amount = _newDepositAmount;
         sessionDeposit.timestamp = block.timestamp;
         deposits[msg.sender].push(sessionDeposit);
         USDT_Lending.transferFrom(msg.sender, address(this), _newDepositAmount);
+    }
+
+    function checkLendingNonce() public view returns(uint256 _nonce) {
+        _nonce = nonceLending[msg.sender];
     }
 
     /// @notice Lets a lender withdraw their funds from the borrow pool
