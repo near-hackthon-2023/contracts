@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import {ERC20Mock} from "./mock/erc20.sol";
 import {OracleMock} from "./mock/oracle.sol";
 import {CoreFiCash} from "../src/CoreFiCash.sol";
+import {Lending} from "../src/Lending.sol";
 
 contract MasterTest is Test {
     OracleMock oracle;
@@ -35,7 +36,50 @@ contract MasterTest is Test {
         assertEq(master.activeLendPosition(), 0);
     }
 
+    function testWithdrawFunds() public {
+        vm.startPrank(alice);
+
+        master.withdrawFunds(50);
+
+        assertEq(USDT.balanceOf(address(alice)), 50);
+        assertEq(USDT.balanceOf(address(master)), 50);
+    }
+
+    function testWithdrawFundsFail() public {
+        vm.startPrank(alice);
+
+        vm.expectRevert("Amount of funds deposited is not enough");
+        master.withdrawFunds(150);
+    }
+
+    /* WIP */
+
+    function testComputeYield() public {
+        /* 
+         * Intermediary test, useful for debugging
+         * Must change computeYield() to public for it to work
+         */
+
+        // vm.startPrank(alice);
+
+        // Lending.Deposit memory deposit;
+        // deposit.amount = 50;
+        // deposit.timestamp = 0;
+
+        // skip(1000);
+
+        // emit log_uint(master.computeYield(deposit));
+    }
+
     function testGetInterestEarnings() public {
+        vm.startPrank(alice);
+
+        // assertEq(master.getInterestEarnings(), 0);
+        // skip(60*60*24*365);
+        // assertEq(master.getInterestEarnings(), 5);
+    }
+
+    function testClaimYield() public {
         uint256 collateral = 1000;
 
         vm.startPrank(bob);
