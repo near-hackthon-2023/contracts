@@ -18,7 +18,7 @@ contract MasterTest is Test {
         USDT = new ERC20Mock("USDT", "USDT");
         deal(address(USDT), alice, 200);
 
-        master = new CoreFiCash(address(USDT), address(1));
+        master = new CoreFiCash(address(USDT));
     }
 
     function testDeposit() public {

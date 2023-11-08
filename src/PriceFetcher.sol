@@ -2,15 +2,20 @@
 
 pragma solidity ^0.8.13;
 
-import {Switchboard} from "@switchboard-xyz/evm.js/contracts/core/testnet/Switchboard.sol";
+import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
-contract PriceFetcher {
-    address public feedId = 0xE746D2c8547691436C42d22Fa0740AEd3DCD289D;
-    int256 public latestValue;
-    uint256 public latestTimestamp;
+interface IDIAOracleV2{
+    function getValue(string memory) external view returns (uint128, uint128);
+}
 
-    function fetchLatestResult() external returns (int256 _latestValue) {
-        (latestValue, latestTimestamp) = Switchboard.getLatestResult(feedId);
-        _latestValue = latestValue;
+contract PriceFetcher is IPriceFetcher {
+
+    constructor() {}
+
+    // From https://docs.diadata.org/products/token-price-feeds/access-the-oracle/deployed-contracts#aurora
+    address immutable feedId = 0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f;
+
+    function fetchLatestResult() public view returns (uint256 _latestValue) {
+        (_latestValue, ) = IDIAOracleV2(feedId).getValue("AURORA/USD"); 
     }
 }

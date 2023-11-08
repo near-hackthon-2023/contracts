@@ -22,7 +22,7 @@ contract MasterTest is Test {
         deal(address(USDT), alice, 100);
         deal(bob, 100000000);
 
-        master = new CoreFiCash(address(USDT), address(oracle));
+        master = new CoreFiCash(address(USDT));
 
         vm.startPrank(alice);
 

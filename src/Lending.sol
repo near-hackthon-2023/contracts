@@ -3,12 +3,12 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
+import {PriceFetcher} from "./PriceFetcher.sol";
 
 /// @title Lending
 /// @author CoreFi-Cash Technical Team
 /// @notice Lending contract
-contract Lending {
+contract Lending is PriceFetcher {
     /// @dev nonce identifier for lender
     uint256 public nonceLending;
     uint256 public interestRate = 0.05 * 10**18; // 5% = 0.05;
@@ -16,16 +16,15 @@ contract Lending {
     /// @dev USDC contract interface
     IERC20 immutable USDT_Lending;
 
-    /// @dev PriceFetcher contract interface
-    IPriceFetcher immutable priceFetcherLending;
-
     /// @notice Lending Constructor
     /// @param _USDT USDT contract address
-    /// @param _oracle Oracle for core-price contract address
-    constructor(address _USDT, address _oracle) {
+    constructor(address _USDT) {
         nonceLending = 0;
         USDT_Lending = IERC20(_USDT);
-        priceFetcherLending = IPriceFetcher(_oracle);
+    }
+
+    function getCurrentPrice() public view returns(uint256 _price) {
+        _price = uint256(this.fetchLatestResult());
     }
 
     /// @dev struct for deposit Params
@@ -89,17 +88,17 @@ contract Lending {
     /// @notice Private function to compute the current yield
     /// @param _deposit deposition params
     /// @return _yieldInCore Amount of yield the user can claim
-    function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
+    function computeYield(Deposit memory _deposit) private view returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
         uint256 _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR_LENDING;
 
-        _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
+        _yieldInCore = _yield / uint256(this.fetchLatestResult());
     }
 
     /// @notice Let a user check their claimable yield
     /// @return _total returning the total amounht claimable
-    function getInterestEarnings() public returns(uint256 _total) {
+    function getInterestEarnings() public view returns(uint256 _total) {
         _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
             _total += computeYield(deposits[msg.sender][i]);

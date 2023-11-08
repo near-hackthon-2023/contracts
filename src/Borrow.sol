@@ -2,18 +2,15 @@
 pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
+import {PriceFetcher} from "./PriceFetcher.sol";
 
 /// @title Borrow
 /// @author CoreFi-Cash Technical Team
 /// @notice Borrow contract*
-contract Borrow {
+contract Borrow is PriceFetcher {
 
     /// @dev USDC contract interface
     IERC20 immutable USDT_Borrow;
-
-    /// @dev PriceFetcher contract interface
-    IPriceFetcher immutable priceFetcherBorrow;
 
     /// @dev Nonce identifier for a borrow
     uint256 public nonceBorrow;
@@ -26,12 +23,10 @@ contract Borrow {
 
     /// @notice Borrow Constructor
     /// @param _USDT USDT contract address
-    /// @param _oracle Oracle for core-price contract address
-    constructor(address _USDT, address _oracle) {
+    constructor(address _USDT) {
         // Set USDT contract
         USDT_Borrow = IERC20(_USDT);
         // Set price oracle contract
-        priceFetcherBorrow = IPriceFetcher(_oracle);
     }
 
     /// @dev LoanParams to keep track of active loans
@@ -85,8 +80,8 @@ contract Borrow {
     /// @notice Internal function for other functions to convert core amount in USDT value
     /// @param _coreTokenAmount amounts of coretokens
     /// @return _usdtValue returns the USDT value
-    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal returns(uint256 _usdtValue) {
-        uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
+    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal view returns(uint256 _usdtValue) {
+        uint256 dollarPerToken = uint256(this.fetchLatestResult());
         _usdtValue = dollarPerToken * _coreTokenAmount;
     }
 
@@ -129,7 +124,7 @@ contract Borrow {
     /// @notice Let a user check their current LTV ratio
     /// @param _nonce Nonce as a unique identifier for the loan
     /// @return _ltv returning the ltv 1% = 100 
-    function checkLTV(uint256 _nonce) public returns(uint256 _ltv){
+    function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
         _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDT(sessionLoan.collateral));
@@ -137,7 +132,7 @@ contract Borrow {
 
     /// @notice Let a user scan for illiquid positions to liquidate
     /// @return _illiquidPositions returning a list of nonces for the illiquid positions
-    function monitorIlliquidPositions() public returns (uint256[] memory _illiquidPositions) {
+    function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
         uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
         

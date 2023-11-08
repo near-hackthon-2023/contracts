@@ -21,7 +21,7 @@ contract MasterTest is Test {
         deal(address(USDT), alice, 1000000);
         deal(bob, 1000000);
 
-        master = new CoreFiCash(address(USDT), address(oracle));
+        master = new CoreFiCash(address(USDT));
     }
 
     function testDepositAndBorrow() public {
