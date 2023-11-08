@@ -36,7 +36,7 @@ contract MasterTest is Test {
     }
 
     function testGetInterestEarnings() public {
-        uint256 collateral = 10000;
+        uint256 collateral = 1000;
 
         vm.startPrank(bob);
         master.borrow{value: collateral}(31536000, 50);
