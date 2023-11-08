@@ -2,15 +2,17 @@
 
 pragma solidity ^0.8.13;
 
-import {Switchboard} from "@switchboard-xyz/evm.js/contracts/core/testnet/Switchboard.sol";
+interface IDIAOracleV2{
+    function getValue(string memory) external view returns (uint128, uint128);
+}
 
 contract PriceFetcher {
-    address public feedId = 0xE746D2c8547691436C42d22Fa0740AEd3DCD289D;
-    int256 public latestValue;
+    address public feedId = 0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f;
+    uint256 public latestValue;
     uint256 public latestTimestamp;
 
-    function fetchLatestResult() external returns (int256 _latestValue) {
-        (latestValue, latestTimestamp) = Switchboard.getLatestResult(feedId);
+    function fetchLatestResult() external returns (uint256 _latestValue) {
+        (latestValue, latestTimestamp) = IDIAOracleV2(feedId).getValue("AURORA/USD");
         _latestValue = latestValue;
     }
 }
