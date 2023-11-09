@@ -18,17 +18,17 @@ contract Lending {
     uint256 public interestRate = 0.05 * 10**18; // 5% = 0.05;
 
     /// @dev USDC contract interface
-    IERC20 immutable USDT_Lending;
+    IERC20 immutable USDC_Lending;
 
     /// @dev PriceFetcher contract interface
     IPriceFetcher immutable priceFetcherLending;
 
     /// @notice Lending Constructor
-    /// @param _USDT USDT contract address
+    /// @param _USDC USDC contract address
     /// @param _oracle Oracle for core-price contract address
-    constructor(address _USDT, address _oracle) {
+    constructor(address _USDC, address _oracle) {
         nonceLending = 0;
-        USDT_Lending = IERC20(_USDT);
+        USDC_Lending = IERC20(_USDC);
         priceFetcherLending = IPriceFetcher(_oracle);
     }
 
@@ -58,7 +58,7 @@ contract Lending {
 
     /// @notice hasAmount is a modifier that controlls that userbalance is enough
     modifier hasAmount(uint256 amount) {
-        require(USDT_Lending.balanceOf(msg.sender) >= amount, "You don't have enough balance");
+        require(USDC_Lending.balanceOf(msg.sender) >= amount, "You don't have enough balance");
         _;
     }
 
@@ -71,17 +71,17 @@ contract Lending {
         sessionDeposit.amount = _newDepositAmount;
         sessionDeposit.timestamp = block.timestamp;
         deposits[msg.sender].push(sessionDeposit);
-        USDT_Lending.transferFrom(msg.sender, address(this), _newDepositAmount);
+        USDC_Lending.transferFrom(msg.sender, address(this), _newDepositAmount);
     }
 
     /// @notice Lets a lender withdraw their funds from the borrow pool
     /// @param _amount Amount they want to withdraw
     function withdrawFunds(uint256 _amount) public {
 
-        require(userDepositedAmount[msg.sender] >= _amount && USDT_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
+        require(userDepositedAmount[msg.sender] >= _amount && USDC_Lending.balanceOf(address(this)) > _amount, "Amount of funds deposited is not enough");
         userDepositedAmount[msg.sender] -= _amount;
 
-        USDT_Lending.transfer(msg.sender, _amount);
+        USDC_Lending.transfer(msg.sender, _amount);
     }
 
     /// @notice Let a user check their current active lending positions
@@ -122,7 +122,7 @@ contract Lending {
     }
 
     function getTreasury() public view returns(uint256 _treasury) {
-        _treasury = USDT_Lending.balanceOf(address(this));
+        _treasury = USDC_Lending.balanceOf(address(this));
     }
 
     function getDepositsByAddress(address user) public view returns(Deposit[] memory _deposits) {

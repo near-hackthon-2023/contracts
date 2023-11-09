@@ -14,7 +14,7 @@ interface IDIAOracleV2{
 contract Borrow {
 
     /// @dev USDC contract interface
-    IERC20 immutable USDT_Borrow;
+    IERC20 immutable USDC_Borrow;
 
     /// @dev PriceFetcher contract interface
     IPriceFetcher immutable priceFetcherBorrow;
@@ -29,11 +29,11 @@ contract Borrow {
     uint256 private constant MULTIPLIER_DENOMINATOR = 10_000;
 
     /// @notice Borrow Constructor
-    /// @param _USDT USDT contract address
+    /// @param _USDC USDC contract address
     /// @param _oracle Oracle for core-price contract address
-    constructor(address _USDT, address _oracle) {
-        // Set USDT contract
-        USDT_Borrow = IERC20(_USDT);
+    constructor(address _USDC, address _oracle) {
+        // Set USDC contract
+        USDC_Borrow = IERC20(_USDC);
         // Set price oracle contract
         priceFetcherBorrow = IPriceFetcher(_oracle);
     }
@@ -61,13 +61,13 @@ contract Borrow {
 
     /// @notice Let a user Borrow. This is a payeable function.
     /// @param _loanDuration duration of loan in seconds
-    /// @param _loanSize The value of USDT that the user wants to lend
+    /// @param _loanSize The value of USDC that the user wants to lend
     /// @notice msg.value will act as the collateral
     function borrow(uint256 _loanDuration, uint256 _loanSize) public payable {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR_BORROW, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
-        uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
+        uint256 amountAvailableForUserLoan = _coreTokenToUSDC(msg.value);
         require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
         LoanParams storage sessionLoan = loan[nonceBorrow];
@@ -82,35 +82,35 @@ contract Borrow {
 
         userLoans[msg.sender].push(sessionLoan);
 
-        USDT_Borrow.transfer(msg.sender, _loanSize);
+        USDC_Borrow.transfer(msg.sender, _loanSize);
         nonceBorrow++;
     }
 
-    /// @notice Internal function for other functions to convert core amount in USDT value
+    /// @notice Internal function for other functions to convert core amount in USDC value
     /// @param _coreTokenAmount amounts of coretokens
-    /// @return _usdtValue returns the USDT value
-    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal view returns(uint256 _usdtValue) {
+    /// @return _usdCValue returns the USDC value
+    function _coreTokenToUSDC(uint256 _coreTokenAmount) internal view returns(uint256 _usdCValue) {
         (uint256 latestValue, ) = IDIAOracleV2(0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f).getValue("ETH/USD");
         uint256 dollarPerToken = latestValue;
-        _usdtValue = dollarPerToken * _coreTokenAmount;
+        _usdCValue = dollarPerToken * _coreTokenAmount;
     }
 
     /// @notice Let a user repay their dept
     /// @param _nonce Nonce as a unique identifier for the loan
     /// @param _to payeable address to repay the loan and get back their collateral
-    /// @param _amountPayback The value of USDT that the user tries to repay, must cover the full loan
+    /// @param _amountPayback The value of USDC that the user tries to repay, must cover the full loan
     function repayBorrow(uint256 _nonce, address payable _to, uint256 _amountPayback) public {
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         require(loan[_nonce].borrower == msg.sender, "You're not authorized");
         require(loan[_nonce].loanSize == _amountPayback, "Not enough repayed");
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.payedBack = true;
-        _subtractInterest(_nonce);
-        // _to.transfer(sessionLoan.collateral);
+        // _subtractInterest(_nonce);
+        _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
 
         userLoans[msg.sender][_nonce].payedBack = true;
-        USDT_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
+        USDC_Borrow.transferFrom(msg.sender, address(this), _amountPayback);
     }
 
     /// @notice Let a user top up their collateral. This is a payable function
@@ -137,7 +137,7 @@ contract Borrow {
     function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
-        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDT(sessionLoan.collateral));
+        _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDC(sessionLoan.collateral));
     }
 
     /// @notice Let a user scan for illiquid positions to liquidate

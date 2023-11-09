@@ -4,13 +4,11 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 
 import {ERC20Mock} from "./mock/erc20.sol";
-import {CoreFiCash} from "../src/CoreFiCash.sol";
-
-// USDT address (mainnet): 0x900101d06A7426441Ae63e9AB3B9b0F63Be145F1
+import {NearFi} from "../src/NearFi.sol";
 
 contract MasterTest is Test {
     ERC20Mock USDT;
-    CoreFiCash master;
+    NearFi master;
 
     address alice = makeAddr("alice");
 
@@ -18,7 +16,7 @@ contract MasterTest is Test {
         USDT = new ERC20Mock("USDT", "USDT");
         deal(address(USDT), alice, 200);
 
-        master = new CoreFiCash(address(USDT), address(1));
+        master = new NearFi(address(USDT), address(1));
     }
 
     function testDeposit() public {

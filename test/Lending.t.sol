@@ -5,13 +5,13 @@ import "forge-std/Test.sol";
 
 import {ERC20Mock} from "./mock/erc20.sol";
 import {OracleMock} from "./mock/oracle.sol";
-import {CoreFiCash} from "../src/CoreFiCash.sol";
+import {NearFi} from "../src/NearFi.sol";
 import {Lending} from "../src/Lending.sol";
 
 contract MasterTest is Test {
     OracleMock oracle;
     ERC20Mock USDT;
-    CoreFiCash master;
+    NearFi master;
 
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
@@ -22,7 +22,7 @@ contract MasterTest is Test {
         deal(address(USDT), alice, 100);
         deal(bob, 100000000);
 
-        master = new CoreFiCash(address(USDT), address(oracle));
+        master = new NearFi(address(USDT), address(oracle));
 
         vm.startPrank(alice);
 

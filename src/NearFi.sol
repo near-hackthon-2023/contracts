@@ -11,21 +11,21 @@ import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 /// @title CoreFiCash
 /// @author CoreFi-Cash Technical Team
 /// @notice CoreFiCash main contract
-contract CoreFiCash is Borrow, Lending {
+contract NearFi is Borrow, Lending {
     /// @dev USDC contract interface
-    IERC20 private immutable USDT;
+    IERC20 private immutable USDC;
 
     /// @dev PriceFetcher contract interface
     IPriceFetcher private immutable priceFetcher;
 
     /// @notice Master Constructor
-    /// @param _USDT USDT contract address
+    /// @param _USDC USDC contract address
     /// @param _priceFetcher Oracle for core-price contract address
     constructor(
-        address _USDT,
+        address _USDC,
         address _priceFetcher
-    ) Borrow(_USDT, _priceFetcher) Lending(_USDT, _priceFetcher) {
-        USDT = IERC20(_USDT);
+    ) Borrow(_USDC, _priceFetcher) Lending(_USDC, _priceFetcher) {
+        USDC = IERC20(_USDC);
         priceFetcher = IPriceFetcher(_priceFetcher);
     }
 }
