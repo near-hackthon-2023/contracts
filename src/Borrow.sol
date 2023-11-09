@@ -106,7 +106,7 @@ contract Borrow {
         LoanParams storage sessionLoan = loan[_nonce];
         sessionLoan.payedBack = true;
         _subtractInterest(_nonce);
-        _to.transfer(sessionLoan.collateral);
+        // _to.transfer(sessionLoan.collateral);
         sessionLoan.collateral = 0;
 
         userLoans[msg.sender][_nonce].payedBack = true;
