@@ -35,7 +35,5 @@ contract MasterTest is Test {
 
         vm.startPrank(bob);
         master.borrow{value: 100000}(31536000, 100000);
-        USDT.approve(address(master), 1000000);
-        master.repayBorrow(0, payable(bob), 100000);
     }
 }

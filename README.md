@@ -1,7 +1,7 @@
 ## NearFi contracts
 
 testnet:
-- 0x8E3Af02d71Cd78316620eF234Cc9ea44aEc0BDBe
+- 0x83C3c43A434749c227f47b03be7E5568fEA63632
 
 ## Deployment
 
