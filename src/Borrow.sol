@@ -67,23 +67,23 @@ contract Borrow {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR_BORROW, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
-        // uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
-        // require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
+        uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
+        require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
-        // LoanParams storage sessionLoan = loan[nonceBorrow];
-        // sessionLoan.nonce = nonceBorrow;
-        // sessionLoan.borrower = msg.sender;
-        // sessionLoan.loanSize = _loanSize;
-        // sessionLoan.collateral = msg.value;
-        // sessionLoan.dueDate = (block.timestamp + _loanDuration);
-        // sessionLoan.borrowedDate = block.timestamp;
-        // sessionLoan.payedBack = false;
-        // sessionLoan.liquidated = false;
+        LoanParams storage sessionLoan = loan[nonceBorrow];
+        sessionLoan.nonce = nonceBorrow;
+        sessionLoan.borrower = msg.sender;
+        sessionLoan.loanSize = _loanSize;
+        sessionLoan.collateral = msg.value;
+        sessionLoan.dueDate = (block.timestamp + _loanDuration);
+        sessionLoan.borrowedDate = block.timestamp;
+        sessionLoan.payedBack = false;
+        sessionLoan.liquidated = false;
 
-        // userLoans[msg.sender].push(sessionLoan);
+        userLoans[msg.sender].push(sessionLoan);
 
-        // USDT_Borrow.transfer(msg.sender, _loanSize);
-        // nonceBorrow++;
+        USDT_Borrow.transfer(msg.sender, _loanSize);
+        nonceBorrow++;
     }
 
     /// @notice Internal function for other functions to convert core amount in USDT value
