@@ -5,6 +5,10 @@ pragma solidity ^0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
+interface IDIAOracleV2{
+    function getValue(string memory) external view returns (uint128, uint128);
+}
+
 /// @title Lending
 /// @author CoreFi-Cash Technical Team
 /// @notice Lending contract
@@ -89,17 +93,19 @@ contract Lending {
     /// @notice Private function to compute the current yield
     /// @param _deposit deposition params
     /// @return _yieldInCore Amount of yield the user can claim
-    function computeYield(Deposit memory _deposit) private returns(uint256 _yieldInCore) {
+    function computeYield(Deposit memory _deposit) private view returns(uint256 _yieldInCore) {
         uint256 timestamp = block.timestamp - _deposit.timestamp;
 
         uint256 _yield = (_deposit.amount * interestRate * timestamp) / ONEYEAR_LENDING;
 
-        _yieldInCore = _yield / uint256(priceFetcherLending.fetchLatestResult());
+        (uint256 latestValue, ) = IDIAOracleV2(0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f).getValue("ETH/USD");
+
+        _yieldInCore = _yield / latestValue;
     }
 
     /// @notice Let a user check their claimable yield
     /// @return _total returning the total amounht claimable
-    function getInterestEarnings() public returns(uint256 _total) {
+    function getInterestEarnings() public view returns(uint256 _total) {
         _total = 0;
         for(uint256 i = 0; i < deposits[msg.sender].length; i++) {
             _total += computeYield(deposits[msg.sender][i]);

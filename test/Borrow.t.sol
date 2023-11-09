@@ -35,6 +35,5 @@ contract MasterTest is Test {
 
         vm.startPrank(bob);
         master.borrow{value: 100000}(31536000, 100000);
-
     }
 }

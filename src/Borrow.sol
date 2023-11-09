@@ -4,6 +4,10 @@ pragma solidity ^0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPriceFetcher} from "./interfaces/IPriceFetcher.sol";
 
+interface IDIAOracleV2{
+    function getValue(string memory) external view returns (uint128, uint128);
+}
+
 /// @title Borrow
 /// @author CoreFi-Cash Technical Team
 /// @notice Borrow contract*
@@ -63,30 +67,31 @@ contract Borrow {
         require(_loanDuration > 0 && _loanDuration < ONEYEAR_BORROW, "Invalid loan duration");
         require(msg.value > 0 && _loanSize > 0, "You cant lend an amount of 0");
 
-        uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
-        require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
+        // uint256 amountAvailableForUserLoan = _coreTokenToUSDT(msg.value);
+        // require(_loanSize <= amountAvailableForUserLoan * 3/2, "You can't take a loan more than 1.5 times your collateral");
 
-        LoanParams storage sessionLoan = loan[nonceBorrow];
-        sessionLoan.nonce = nonceBorrow;
-        sessionLoan.borrower = msg.sender;
-        sessionLoan.loanSize = _loanSize;
-        sessionLoan.collateral = msg.value;
-        sessionLoan.dueDate = (block.timestamp + _loanDuration);
-        sessionLoan.borrowedDate = block.timestamp;
-        sessionLoan.payedBack = false;
-        sessionLoan.liquidated = false;
+        // LoanParams storage sessionLoan = loan[nonceBorrow];
+        // sessionLoan.nonce = nonceBorrow;
+        // sessionLoan.borrower = msg.sender;
+        // sessionLoan.loanSize = _loanSize;
+        // sessionLoan.collateral = msg.value;
+        // sessionLoan.dueDate = (block.timestamp + _loanDuration);
+        // sessionLoan.borrowedDate = block.timestamp;
+        // sessionLoan.payedBack = false;
+        // sessionLoan.liquidated = false;
 
-        userLoans[msg.sender].push(sessionLoan);
+        // userLoans[msg.sender].push(sessionLoan);
 
-        USDT_Borrow.transfer(msg.sender, _loanSize);
-        nonceBorrow++;
+        // USDT_Borrow.transfer(msg.sender, _loanSize);
+        // nonceBorrow++;
     }
 
     /// @notice Internal function for other functions to convert core amount in USDT value
     /// @param _coreTokenAmount amounts of coretokens
     /// @return _usdtValue returns the USDT value
-    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal returns(uint256 _usdtValue) {
-        uint256 dollarPerToken = uint256(priceFetcherBorrow.fetchLatestResult());
+    function _coreTokenToUSDT(uint256 _coreTokenAmount) internal view returns(uint256 _usdtValue) {
+        (uint256 latestValue, ) = IDIAOracleV2(0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f).getValue("ETH/USD");
+        uint256 dollarPerToken = latestValue;
         _usdtValue = dollarPerToken * _coreTokenAmount;
     }
 
@@ -129,7 +134,7 @@ contract Borrow {
     /// @notice Let a user check their current LTV ratio
     /// @param _nonce Nonce as a unique identifier for the loan
     /// @return _ltv returning the ltv 1% = 100 
-    function checkLTV(uint256 _nonce) public returns(uint256 _ltv){
+    function checkLTV(uint256 _nonce) public view returns(uint256 _ltv){
         require(loan[_nonce].loanSize > 0, "Loan doesnt exist");
         LoanParams storage sessionLoan = loan[_nonce];
         _ltv = ((sessionLoan.loanSize * MULTIPLIER_DENOMINATOR) / _coreTokenToUSDT(sessionLoan.collateral));
@@ -137,7 +142,7 @@ contract Borrow {
 
     /// @notice Let a user scan for illiquid positions to liquidate
     /// @return _illiquidPositions returning a list of nonces for the illiquid positions
-    function monitorIlliquidPositions() public returns (uint256[] memory _illiquidPositions) {
+    function monitorIlliquidPositions() public view returns (uint256[] memory _illiquidPositions) {
         uint256 amountOfLoans = nonceBorrow;
         uint256 illiquidCount = 0;
         

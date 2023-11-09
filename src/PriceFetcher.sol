@@ -12,7 +12,7 @@ contract PriceFetcher {
     uint256 public latestTimestamp;
 
     function fetchLatestResult() external returns (uint256 _latestValue) {
-        (latestValue, latestTimestamp) = IDIAOracleV2(feedId).getValue("ETH/USD");
+        (latestValue, latestTimestamp) = IDIAOracleV2(0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f).getValue("ETH/USD");
         _latestValue = latestValue;
     }
 }
